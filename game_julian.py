@@ -1,0 +1,1 @@
+#Run Away game to escape the grinch before he catches up to player. Collect presents and pick up snowballs to throw at the grinch to slow him down. Must collect at least 10 presents to give to Santa. 
