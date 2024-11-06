@@ -1,23 +1,16 @@
-#Run Away game to escape the grinch before he catches up to player. Collect presents and pick up snowballs to throw at the grinch to slow him down. Must collect at least 10 presents to give to Santa. 
-# pygame template
-
 import pygame
-
+import random
 
 pygame.init()
 
+# Screen and clock setup
 WIDTH = 640
 HEIGHT = 480
 SIZE = (WIDTH, HEIGHT)
-
 screen = pygame.display.set_mode(SIZE)
 clock = pygame.time.Clock()
 
-# ---------------------------
-# Initialize global variables
-
-#colours
-
+# Colors
 BLACK       = (0, 0, 0)
 WHITE       = (255, 255, 255)
 RED         = (255, 0, 0)
@@ -55,11 +48,26 @@ DARK_GREEN  = (0, 100, 0)
 LIGHT_YELLOW= (255, 255, 224)
 DARK_RED    = (139, 0, 0)
 
-# Tree and House positions
-house_positions = [(WIDTH - 50, HEIGHT - 30) ]
-tree_positions = [(WIDTH - 80, HEIGHT - 60) ]
-# ---------------------------
+# Character 
+runner_x = WIDTH // 2
+runner_y = HEIGHT // 2
+runner_speed = 5
 
+# Housea
+house_width = 30
+house_height = 30
+house1_x = 0
+house1_y = random.randint(-HEIGHT, 0)
+house2_x = WIDTH - house_width
+house2_y = random.randint(-HEIGHT, 0)
+
+# Barrier setup (50 pixels away from the edges)
+left_barrier = 50
+right_barrier = WIDTH - 50 - house_width  # 50 pixels from the right edge
+top_barrier = 50
+bottom_barrier = HEIGHT - 50
+
+# Game loop
 running = True
 while running:
     # EVENT HANDLING
@@ -68,19 +76,47 @@ while running:
             running = False
 
     # GAME STATE UPDATES
-    # All game math and comparisons happen here
+    keys = pygame.key.get_pressed()
+
+    # Move the character (runner) while respecting barriers
+    if keys[pygame.K_UP] and runner_y > top_barrier:
+        runner_y -= runner_speed
+    if keys[pygame.K_DOWN] and runner_y < bottom_barrier:
+        runner_y += runner_speed
+    if keys[pygame.K_LEFT] and runner_x > left_barrier:
+        runner_x -= runner_speed  # Prevent moving past the left barrier
+    if keys[pygame.K_RIGHT] and runner_x < right_barrier:
+        runner_x += runner_speed  # Prevent moving past the right barrier
+
+    # Move the houses relative to the character's movement
+    house1_y += runner_speed
+    house2_y += runner_speed
+
+    # Reset house position to create an infinite scrolling effect
+    if house1_y > HEIGHT:
+        house1_y = -house_height
+    if house2_y > HEIGHT:
+        house2_y = -house_height
 
     # DRAWING
-    screen.fill((255, 255, 255))  # always the first drawing command
-    for (x, y) in tree_positions:
-        pygame.draw.rect(screen, BROWN, (x, y, 20, 100))  # Tree trunk
-        pygame.draw.circle(screen, DARK_GREEN, (x + 10, y - 20), 30)  # Tree leaf
+    screen.fill(WHITE)  # Background color
 
-    # Must be the last two lines
-    # of the game loop
+    # Draw the houses on the sides
+    pygame.draw.rect(screen, BLACK, (house1_x, house1_y, house_width, house_height))  # House body
+    pygame.draw.polygon(screen, BLACK, [(house1_x, house1_y), 
+    (house1_x + house_width // 2, house1_y - 20), 
+    (house1_x + house_width, house1_y)])  # Roof
+
+    pygame.draw.rect(screen, BLACK, (house2_x, house2_y, house_width, house_height))  # House body
+    pygame.draw.polygon(screen, BLACK, [(house2_x, house2_y), 
+    (house2_x + house_width // 2, house2_y - 20), 
+    (house2_x + house_width, house2_y)])  # Roof
+
+    # Draw the runner (centered square)
+    pygame.draw.rect(screen, BLACK, (runner_x - 10, runner_y - 10, 20, 20))
+
+    # Update display
     pygame.display.flip()
     clock.tick(30)
-    #---------------------------
-
 
 pygame.quit()
