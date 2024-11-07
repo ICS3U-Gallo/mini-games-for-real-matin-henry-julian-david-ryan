@@ -1,4 +1,11 @@
 #star shooter, christmas style, shooting the grinch before he comes down the chimney
+
+# TO DO:
+# - Implement shooting
+# - Draw grinch
+# - Determine random locations and movement of Grinch's
+# - Implement sound and instructions
+
 import pygame
 pygame.init()
 
@@ -12,19 +19,23 @@ clock = pygame.time.Clock()
 # ---------------------------
 # Initialize global variables
 
+sugar_shooter_x = 250
+sugar_shooter_y = 350
+ball_y = 325
+
 # ---------------------------
 
 running = True
 while running:
     # EVENT HANDLING
+    keys = pygame.key.get_pressed()
+
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             running = False
 
-    # DRAWING
+    # BACKGROUND
     screen.fill((115, 44, 14))
-
-    # CHIMNEY BACKGROUND                                                x    y   l    h
     brick_lines = pygame.draw.rect(screen, (255, 255, 255), pygame.Rect(0, 100, 640, 15))
     brick_lines = pygame.draw.rect(screen, (255, 255, 255), pygame.Rect(0, 200, 640, 15))
     brick_lines = pygame.draw.rect(screen, (255, 255, 255), pygame.Rect(0, 300, 640, 15))
@@ -66,11 +77,22 @@ while running:
     brick_lines = pygame.draw.rect(screen, (255, 255, 255), pygame.Rect(300, 400, 15, 100))
     brick_lines = pygame.draw.rect(screen, (255, 255, 255), pygame.Rect(400, 500, 15, 100))
 
-    #Movements and changes
+    # MOVEMENTS
+    if keys [pygame.K_LEFT] and sugar_shooter_x > 0:
+        sugar_shooter_x -= 10
+    if keys [pygame.K_RIGHT] and sugar_shooter_x < 640:
+        sugar_shooter_x += 10
+    if keys [pygame.K_UP]:
+        pygame.draw.ellipse(screen, (0, 0, 0), pygame.Rect(sugar_shooter_x + 3, ball_y, 20, 20))    
+    
+    # DRAWING
+    sugar_shooter1 = pygame.draw.rect(screen, (255, 255, 255), pygame.Rect(sugar_shooter_x, sugar_shooter_y, 25, 120))
+    sugar_shooter1 = pygame.draw.rect(screen, (255, 0, 0), pygame.Rect(sugar_shooter_x, sugar_shooter_y, 25, 25))
+    sugar_shooter1 = pygame.draw.rect(screen, (255, 0, 0), pygame.Rect(sugar_shooter_x, sugar_shooter_y + 50, 25, 25))
+    sugar_shooter1 = pygame.draw.rect(screen, (255, 0, 0), pygame.Rect(sugar_shooter_x, sugar_shooter_y + 100, 25, 25))
+    sugar_shooter1 = pygame.draw.rect(screen, (255, 255, 255), pygame.Rect(sugar_shooter_x + 25, sugar_shooter_y + 100, 25, 25))
 
     pygame.display.flip()
     clock.tick(30)
     #---------------------------
-
-
 pygame.quit()
