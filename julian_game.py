@@ -48,12 +48,18 @@ DARK_GREEN  = (0, 100, 0)
 LIGHT_YELLOW= (255, 255, 224)
 DARK_RED    = (139, 0, 0)
 
-# Character 
+# Font setup
+font = pygame.font.Font(None, 36)
+
+# Game state variables
+running = True
+in_menu = True
+
+# Game variables
 runner_x = WIDTH // 2
 runner_y = HEIGHT // 2
 runner_speed = 5
 
-# Housea
 house_width = 30
 house_height = 30
 house1_x = 0
@@ -61,62 +67,116 @@ house1_y = random.randint(-HEIGHT, 0)
 house2_x = WIDTH - house_width
 house2_y = random.randint(-HEIGHT, 0)
 
-# Barrier setup (50 pixels away from the edges)
+# Barrier setup
 left_barrier = 50
-right_barrier = WIDTH - 50 - house_width  # 50 pixels from the right edge
+right_barrier = WIDTH - 50 - house_width
 top_barrier = 50
 bottom_barrier = HEIGHT - 50
 
-# Game loop
-running = True
+# Main game loop with menu
 while running:
-    # EVENT HANDLING
+    # --- EVENT HANDLING ---
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             running = False
 
-    # GAME STATE UPDATES
-    keys = pygame.key.get_pressed()
+    if in_menu:
+        # Handle key presses in the menu
+        keys = pygame.key.get_pressed()
 
-    # Move the character (runner) while respecting barriers
-    if keys[pygame.K_UP] and runner_y > top_barrier:
-        runner_y -= runner_speed
-    if keys[pygame.K_DOWN] and runner_y < bottom_barrier:
-        runner_y += runner_speed
-    if keys[pygame.K_LEFT] and runner_x > left_barrier:
-        runner_x -= runner_speed  # Prevent moving past the left barrier
-    if keys[pygame.K_RIGHT] and runner_x < right_barrier:
-        runner_x += runner_speed  # Prevent moving past the right barrier
+        # Main menu interaction
+        if keys[pygame.K_RETURN]:  # Start game
+            in_menu = False
+            # Reset game variables
+            runner_x = WIDTH // 2
+            runner_y = HEIGHT // 2
+            house1_y = random.randint(-HEIGHT, 0)
+            house2_y = random.randint(-HEIGHT, 0)
 
-    # Move the houses relative to the character's movement
-    house1_y += runner_speed
-    house2_y += runner_speed
+        elif keys[pygame.K_i]:  # Instructions
+            show_instructions = True
+            while show_instructions:
+                screen.fill(WHITE)
+                instructions_title = font.render("Instructions", True, BLACK)
+                controls_text = font.render("Use Arrow keys to move: Up, Down, Left, Right", True, BLACK)
+                gameplay_text = font.render("Avoid obstacles and reach the goal!", True, BLACK)
+                back_text = font.render("Press 'B' to go back", True, BLACK)
 
-    # Reset house position to create an infinite scrolling effect
-    if house1_y > HEIGHT:
-        house1_y = -house_height
-    if house2_y > HEIGHT:
-        house2_y = -house_height
+                screen.blit(instructions_title, (WIDTH // 2 - instructions_title.get_width() // 2, HEIGHT // 4))
+                screen.blit(controls_text, (WIDTH // 2 - controls_text.get_width() // 2, HEIGHT // 2 - 40))
+                screen.blit(gameplay_text, (WIDTH // 2 - gameplay_text.get_width() // 2, HEIGHT // 2))
+                screen.blit(back_text, (WIDTH // 2 - back_text.get_width() // 2, HEIGHT // 2 + 40))
 
-    # DRAWING
-    screen.fill(WHITE)  # Background color
+                pygame.display.flip()
 
-    # Draw the houses on the sides
-    pygame.draw.rect(screen, BLACK, (house1_x, house1_y, house_width, house_height))  # House body
-    pygame.draw.polygon(screen, BLACK, [(house1_x, house1_y), 
-    (house1_x + house_width // 2, house1_y - 20), 
-    (house1_x + house_width, house1_y)])  # Roof
+                # Handle back action
+                for event in pygame.event.get():
+                    if event.type == pygame.QUIT:
+                        running = False
+                        show_instructions = False
+                    if event.type == pygame.KEYDOWN:
+                        if event.key == pygame.K_b:  # Go back to the menu
+                            show_instructions = False
+                            in_menu = True
 
-    pygame.draw.rect(screen, BLACK, (house2_x, house2_y, house_width, house_height))  # House body
-    pygame.draw.polygon(screen, BLACK, [(house2_x, house2_y), 
-    (house2_x + house_width // 2, house2_y - 20), 
-    (house2_x + house_width, house2_y)])  # Roof
+        elif keys[pygame.K_q]:  # Quit game
+            running = False
 
-    # Draw the runner (centered square)
-    pygame.draw.rect(screen, BLACK, (runner_x - 10, runner_y - 10, 20, 20))
+        # --- DRAWING (Main Menu) ---
+        screen.fill(WHITE)
+        title_text = font.render("Main Menu", True, BLACK)
+        start_text = font.render("Press Enter to Start", True, BLACK)
+        instructions_text = font.render("Press I for Instructions", True, BLACK)
+        quit_text = font.render("Press Q to Quit", True, BLACK)
 
-    # Update display
-    pygame.display.flip()
-    clock.tick(30)
+        screen.blit(title_text, (WIDTH // 2 - title_text.get_width() // 2, HEIGHT // 4))
+        screen.blit(start_text, (WIDTH // 2 - start_text.get_width() // 2, HEIGHT // 2 - 40))
+        screen.blit(instructions_text, (WIDTH // 2 - instructions_text.get_width() // 2, HEIGHT // 2))
+        screen.blit(quit_text, (WIDTH // 2 - quit_text.get_width() // 2, HEIGHT // 2 + 40))
+
+        pygame.display.flip()
+
+    else:  # --- GAME STATE UPDATES (If not in menu) ---
+        keys = pygame.key.get_pressed()
+
+        # Move the character (runner) while respecting barriers
+        if keys[pygame.K_UP] and runner_y > top_barrier:
+            runner_y -= runner_speed
+        if keys[pygame.K_DOWN] and runner_y < bottom_barrier:
+            runner_y += runner_speed
+        if keys[pygame.K_LEFT] and runner_x > left_barrier:
+            runner_x -= runner_speed
+        if keys[pygame.K_RIGHT] and runner_x < right_barrier:
+            runner_x += runner_speed
+
+        # Move the houses relative to the character's movement
+        house1_y += runner_speed
+        house2_y += runner_speed
+
+        # Reset house position to create an infinite scrolling effect
+        if house1_y > HEIGHT:
+            house1_y = -house_height
+        if house2_y > HEIGHT:
+            house2_y = -house_height
+
+        # --- DRAWING (Game Loop) ---
+        screen.fill(WHITE)
+
+        # Draw the houses on the sides
+        pygame.draw.rect(screen, BLACK, (house1_x, house1_y, house_width, house_height))  # House body
+        pygame.draw.polygon(screen, BLACK, [(house1_x, house1_y), 
+        (house1_x + house_width // 2, house1_y - 20), 
+        (house1_x + house_width, house1_y)])  # Roof
+
+        pygame.draw.rect(screen, BLACK, (house2_x, house2_y, house_width, house_height))  # House body
+        pygame.draw.polygon(screen, BLACK, [(house2_x, house2_y), 
+        (house2_x + house_width // 2, house2_y - 20), 
+        (house2_x + house_width, house2_y)])  # Roof
+
+        # Draw the runner (centered square)
+        pygame.draw.rect(screen, BLACK, (runner_x - 10, runner_y - 10, 20, 20))
+
+        pygame.display.flip()
+        clock.tick(30)
 
 pygame.quit()
