@@ -50,10 +50,12 @@ DARK_RED    = (139, 0, 0)
 
 # Font setup
 font = pygame.font.Font(None, 36)
+large_font = pygame.font.Font(None, 48)
 
 # Game state variables
 running = True
 in_menu = True
+in_game = False
 
 # Game variables
 runner_x = WIDTH // 2
@@ -73,6 +75,55 @@ right_barrier = WIDTH - 50 - house_width
 top_barrier = 50
 bottom_barrier = HEIGHT - 50
 
+# Snowflake class to simulate snowfall
+class Snowflake:
+    def __init__(self):
+        self.x = random.randint(0, WIDTH)
+        self.y = random.randint(-HEIGHT, 0)
+        self.size = random.randint(2, 5)
+        self.speed = random.uniform(1, 3)
+    
+    def fall(self):
+        self.y += self.speed
+        if self.y > HEIGHT:
+            self.y = random.randint(-HEIGHT, 0)
+            self.x = random.randint(0, WIDTH)
+        
+    def draw(self):
+        pygame.draw.circle(screen, WHITE, (self.x, self.y), self.size)
+
+# List of snowflakes
+snowflakes = [Snowflake() for _ in range(100)]
+
+# Function to draw Christmas string lights along paths (alternating red and green)
+def draw_christmas_lights():
+    light_colors = [RED, GREEN]
+    spacing = 20  # Distance between lights
+    for y in range(top_barrier, bottom_barrier, spacing):
+        pygame.draw.circle(screen, light_colors[(y // spacing) % 2], (left_barrier - 10, y), 3)  # Left side lights
+        pygame.draw.circle(screen, light_colors[(y // spacing) % 2], (right_barrier + house_width + 10, y), 3)  # Right side lights
+
+# Function to draw a Christmas tree
+def draw_christmas_tree(x, y):
+    # Draw the tree (green triangles)
+    pygame.draw.polygon(screen, GREEN, [(x, y), (x - 50, y + 100), (x + 50, y + 100)])  # Bottom triangle
+    pygame.draw.polygon(screen, GREEN, [(x, y - 50), (x - 40, y + 50), (x + 40, y + 50)])  # Middle triangle
+    pygame.draw.polygon(screen, GREEN, [(x, y - 100), (x - 30, y), (x + 30, y)])  # Top triangle
+
+    # Draw the trunk (brown rectangle)
+    pygame.draw.rect(screen, BROWN, (x - 15, y + 100, 30, 40))
+
+    # Draw decorations (colorful balls)
+    for _ in range(5):  # Randomly place 5 decorations
+        pygame.draw.circle(screen, random.choice([RED, YELLOW, GREEN]), 
+                           (x + random.randint(-30, 30), y + random.randint(0, 100)), 5)
+
+# Function to draw presents near the tree
+def draw_presents(x, y):
+    for dx in range(-50, 51, 30):  # Create 3 presents
+        pygame.draw.rect(screen, BROWN, (x + dx, y + 140, 20, 20))  # Present box
+        pygame.draw.rect(screen, RED, (x + dx + 5, y + 140 + 5, 10, 10))  # Red ribbon
+
 # Main game loop with menu
 while running:
     # --- EVENT HANDLING ---
@@ -87,6 +138,7 @@ while running:
         # Main menu interaction
         if keys[pygame.K_RETURN]:  # Start game
             in_menu = False
+            in_game = True
             # Reset game variables
             runner_x = WIDTH // 2
             runner_y = HEIGHT // 2
@@ -97,10 +149,10 @@ while running:
             show_instructions = True
             while show_instructions:
                 screen.fill(WHITE)
-                instructions_title = font.render("Instructions", True, BLACK)
-                controls_text = font.render("Use Arrow keys to move: Up, Down, Left, Right", True, BLACK)
-                gameplay_text = font.render("Avoid obstacles and reach the goal!", True, BLACK)
-                back_text = font.render("Press 'B' to go back", True, BLACK)
+                instructions_title = large_font.render("Instructions", True, RED)
+                controls_text = font.render("Use Arrow keys to move: Up, Down, Left, Right", True, RED)
+                gameplay_text = font.render("Avoid obstacles and reach the goal!", True, RED)
+                back_text = font.render("Press 'B' to go back", True, RED)
 
                 screen.blit(instructions_title, (WIDTH // 2 - instructions_title.get_width() // 2, HEIGHT // 4))
                 screen.blit(controls_text, (WIDTH // 2 - controls_text.get_width() // 2, HEIGHT // 2 - 40))
@@ -124,10 +176,24 @@ while running:
 
         # --- DRAWING (Main Menu) ---
         screen.fill(WHITE)
-        title_text = font.render("Main Menu", True, BLACK)
-        start_text = font.render("Press Enter to Start", True, BLACK)
-        instructions_text = font.render("Press I for Instructions", True, BLACK)
-        quit_text = font.render("Press Q to Quit", True, BLACK)
+
+        # Draw snowflakes
+        for snowflake in snowflakes:
+            snowflake.fall()
+            snowflake.draw()
+
+        # Draw Christmas tree and presents
+        draw_christmas_tree(100, 150)  # Place the tree at (100, 150)
+        draw_presents(100, 150)        # Draw presents near the tree
+
+        # Draw Christmas lights on the sides of the paths
+        draw_christmas_lights()
+
+        # Draw the main menu UI
+        title_text = large_font.render("Merry Christmas!", True, RED)
+        start_text = font.render("Press Enter to Start", True, GREEN)
+        instructions_text = font.render("Press I for Instructions", True, GREEN)
+        quit_text = font.render("Press Q to Quit", True, GREEN)
 
         screen.blit(title_text, (WIDTH // 2 - title_text.get_width() // 2, HEIGHT // 4))
         screen.blit(start_text, (WIDTH // 2 - start_text.get_width() // 2, HEIGHT // 2 - 40))
@@ -136,8 +202,13 @@ while running:
 
         pygame.display.flip()
 
-    else:  # --- GAME STATE UPDATES (If not in menu) ---
+    elif in_game:  # --- GAME STATE UPDATES (If not in menu) ---
         keys = pygame.key.get_pressed()
+
+        # Check for pause
+        if keys[pygame.K_p]:  # Pause and go back to the main menu
+            in_game = False
+            in_menu = True
 
         # Move the character (runner) while respecting barriers
         if keys[pygame.K_UP] and runner_y > top_barrier:
@@ -162,16 +233,29 @@ while running:
         # --- DRAWING (Game Loop) ---
         screen.fill(WHITE)
 
-        # Draw the houses on the sides
-        pygame.draw.rect(screen, BLACK, (house1_x, house1_y, house_width, house_height))  # House body
-        pygame.draw.polygon(screen, BLACK, [(house1_x, house1_y), 
-        (house1_x + house_width // 2, house1_y - 20), 
-        (house1_x + house_width, house1_y)])  # Roof
+        # Draw snowflakes
+        for snowflake in snowflakes:
+            snowflake.fall()
+            snowflake.draw()
 
-        pygame.draw.rect(screen, BLACK, (house2_x, house2_y, house_width, house_height))  # House body
-        pygame.draw.polygon(screen, BLACK, [(house2_x, house2_y), 
-        (house2_x + house_width // 2, house2_y - 20), 
-        (house2_x + house_width, house2_y)])  # Roof
+        # Draw the houses with more details
+        pygame.draw.rect(screen, BROWN, (house1_x, house1_y, house_width, house_height))  # House body
+        pygame.draw.polygon(screen, BROWN, [(house1_x, house1_y), 
+                                           (house1_x + house_width // 2, house1_y - 20), 
+                                           (house1_x + house_width, house1_y)])  # Roof
+        # Adding windows and door to the house
+        pygame.draw.rect(screen, WHITE, (house1_x + 5, house1_y + 5, 10, 10))  # Window
+        pygame.draw.rect(screen, BLACK, (house1_x + 8, house1_y + 5, 4, 4))  # Window details
+        pygame.draw.rect(screen, BLACK, (house1_x + 10, house1_y + house_height - 10, 10, 10))  # Door
+
+        pygame.draw.rect(screen, BROWN, (house2_x, house2_y, house_width, house_height))  # House body
+        pygame.draw.polygon(screen, BROWN, [(house2_x, house2_y), 
+                                           (house2_x + house_width // 2, house2_y - 20), 
+                                           (house2_x + house_width, house2_y)])  # Roof
+        # Adding windows and door to house 2
+        pygame.draw.rect(screen, WHITE, (house2_x + 5, house2_y + 5, 10, 10))  # Window
+        pygame.draw.rect(screen, BLACK, (house2_x + 8, house2_y + 5, 4, 4))  # Window details
+        pygame.draw.rect(screen, BLACK, (house2_x + 10, house2_y + house_height - 10, 10, 10))  # Door
 
         # Draw the runner (centered square)
         pygame.draw.rect(screen, BLACK, (runner_x - 10, runner_y - 10, 20, 20))
