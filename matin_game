@@ -7,6 +7,7 @@
 # - Implement sound and instructions
 
 import pygame
+from pygame.locals import *
 pygame.init()
 
 WIDTH = 640
@@ -21,7 +22,7 @@ clock = pygame.time.Clock()
 
 sugar_shooter_x = 250
 sugar_shooter_y = 350
-ball_y = 325
+bullet_y = 325
 
 # ---------------------------
 
@@ -78,12 +79,16 @@ while running:
     brick_lines = pygame.draw.rect(screen, (255, 255, 255), pygame.Rect(400, 500, 15, 100))
 
     # MOVEMENTS
+    bullet_pos = []
     if keys [pygame.K_LEFT] and sugar_shooter_x > 0:
         sugar_shooter_x -= 10
-    if keys [pygame.K_RIGHT] and sugar_shooter_x < 640:
-        sugar_shooter_x += 10
-    if keys [pygame.K_UP]:
-        pygame.draw.ellipse(screen, (0, 0, 0), pygame.Rect(sugar_shooter_x + 3, ball_y, 20, 20))    
+    if keys [pygame.K_RIGHT] and sugar_shooter_x < 590:
+        sugar_shooter_x += 10  
+
+    if keys[pygame.K_UP]:
+        bullet_pos.append(sugar_shooter_x + 3)
+    for position in bullet_pos:
+        bullet = pygame.draw.ellipse(screen, (0, 0, 0), pygame.Rect(position, bullet_y, 20, 20))
     
     # DRAWING
     sugar_shooter1 = pygame.draw.rect(screen, (255, 255, 255), pygame.Rect(sugar_shooter_x, sugar_shooter_y, 25, 120))
