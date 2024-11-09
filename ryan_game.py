@@ -28,3 +28,7 @@ def draw_snake(snake_list):
     for i, (x, y) in enumerate(snake_list):
         color = red if i % 2 == 0 else green  
         pygame.draw.rect(screen, color, [x, y, snake_block, snake_block])
+#display of the message
+def message(msg, color):
+    mesg = font_style.render(msg, True, color)
+    screen.blit(mesg, [width / 6, height / 3])
