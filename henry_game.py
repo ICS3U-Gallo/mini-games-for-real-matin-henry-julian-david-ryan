@@ -32,20 +32,22 @@ def generate_question(difficulty):
     if difficulty == "easy":
         num1 = random.randint(1, 10)
         num2 = random.randint(1, 10)
-        operation = random.choice(["+", "-"])
     else:  # hard
         num1 = random.randint(10, 100)
         num2 = random.randint(10, 100)
-        operation = random.choice(["+", "-"])
+
+    operation = random.choice(["+", "-"])
 
     if operation == "+":
         answer = num1 + num2
         question = f"{num1} + {num2} = ?"
     else:
+        if num1 < num2:
+            num1, num2 = num2, num1
         answer = num1 - num2
         question = f"{num1} - {num2} = ?"
 
-# Draw the main menu
+# main menu
 def draw_menu():
     screen.fill(BG)
     title_text = font.render("Grinches Math Game", True, BLACK)
@@ -60,7 +62,70 @@ def draw_menu():
     pygame.draw.rect(screen, RED, (WIDTH // 2 - 100, HEIGHT // 2 + 20, 200, 50))
     instructions_text = small_font.render("Instructions", True, WHITE)
     screen.blit(instructions_text, (WIDTH // 2 - instructions_text.get_width() // 2, HEIGHT // 2 + 30))
+    #grinch 1
+    #head
+    pygame.draw.ellipse(screen, GREEN, (80, 250, 120, 160))
 
+    #hat
+    pygame.draw.polygon(screen, RED, [(90, 270), (190, 270), (140, 190)])
+    pygame.draw.circle(screen, WHITE, (140, 190), 10) 
+    pygame.draw.rect(screen, WHITE, (80, 270, 120, 15))
+
+    #eyes
+    pygame.draw.circle(screen, WHITE, (115, 310), 12)
+    pygame.draw.circle(screen, WHITE, (165, 310), 12)
+    pygame.draw.circle(screen, BLACK, (115, 310), 6)
+    pygame.draw.circle(screen, BLACK, (165, 310), 6)
+
+    #nose
+    pygame.draw.circle(screen, BLACK, (140, 340), 5)
+    #smile
+    pygame.draw.arc(screen, RED, (115, 355, 50, 20), 3.6, 6.3, 3)
+
+    #eyebrows
+    pygame.draw.line(screen, BLACK, (105, 285), (125, 295), 3)
+    pygame.draw.line(screen, BLACK, (175, 285), (155, 295), 3)
+
+    #body
+    pygame.draw.rect(screen, GREEN, (120, 420, 40, 100))
+    pygame.draw.circle(screen, RED, (140, 440), 5)
+    pygame.draw.circle(screen, RED, (140, 460), 5)
+    pygame.draw.circle(screen, RED, (140, 480), 5)
+
+    #arms
+    pygame.draw.line(screen, GREEN, (120, 430), (90, 480), 8)
+    pygame.draw.line(screen, GREEN, (160, 430), (190, 480), 8)
+
+    #grinch 2
+    #head
+    pygame.draw.ellipse(screen, GREEN, (610, 250, 120, 160))
+
+    #hat
+    pygame.draw.polygon(screen, RED, [(620, 270), (720, 270), (670, 190)])
+    pygame.draw.circle(screen, WHITE, (670, 190), 10)
+    pygame.draw.rect(screen, WHITE, (610, 270, 120, 15))
+
+    #eyes
+    pygame.draw.circle(screen, WHITE, (645, 310), 12)
+    pygame.draw.circle(screen, WHITE, (695, 310), 12)
+    pygame.draw.circle(screen, BLACK, (645, 310), 6)
+    pygame.draw.circle(screen, BLACK, (695, 310), 6)
+    pygame.draw.circle(screen, BLACK, (670, 340), 5)
+    pygame.draw.arc(screen, RED, (645, 355, 50, 20), 3.6, 6.3, 3)
+
+    #eyebrows
+    pygame.draw.line(screen, BLACK, (635, 285), (655, 295), 3)
+    pygame.draw.line(screen, BLACK, (705, 285), (685, 295), 3)
+
+    #body
+    pygame.draw.rect(screen, GREEN, (650, 420, 40, 100))
+    pygame.draw.circle(screen, RED, (670, 440), 5)
+    pygame.draw.circle(screen, RED, (670, 460), 5)
+    pygame.draw.circle(screen, RED, (670, 480), 5)
+
+    #arms
+    pygame.draw.line(screen, GREEN, (650, 430), (620, 480), 8)
+    pygame.draw.line(screen, GREEN, (690, 430), (720, 480), 8)
 # Draw the instructions screen
 def draw_instructions():
     screen.fill(BG)    
@@ -110,9 +175,16 @@ while running:
     if game_state == "menu":
         draw_menu()
     elif game_state == "instructions":
+
         draw_instructions()
+
+        transparent_rect = pygame.Surface((750, 650), pygame.SRCALPHA)
+        transparent_rect.fill((255, 255, 255, 100))
+        screen.blit(transparent_rect, (20, 20))
+    
         instructions_text = instructional_font.render("Welcome to The Grinches Math Game!", True, RED)
         screen.blit(instructions_text, (120,50))
+
         line1 = instructional_font2.render("The grinch has captured you and stolen Christmas! In order to save ", True, RED)
         line2 = instructional_font2.render ("Christmas Day and be the world's hero you must complete these math questions", True, RED)
         line3 = instructional_font2.render("Each question right is equal to 1 damage to The Grinch", True, RED)
@@ -126,6 +198,9 @@ while running:
         screen.blit(line4, (30, 280))
         screen.blit(line5, (30, 310))
         screen.blit(line6, (120, 370))
+
+
+        
 
 
     elif game_state == "game":
