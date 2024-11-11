@@ -16,11 +16,12 @@ RED = (245, 95, 95)
 
 font = pygame.font.SysFont("comicsansms", 50)
 small_font = pygame.font.SysFont("comicsansms", 30)
-score_font = pygame.font.SysFont("Arial", 35)
+score_font = pygame.font.SysFont("Arial", 30)
 instructional_font = pygame.font.SysFont("Times New Roman", 35)
 instructional_font2 = pygame.font.SysFont("Arial", 20)
 
-score = 0
+score = 10
+lives = 3
 question = ""
 answer = 0
 user_answer = ""
@@ -132,6 +133,20 @@ def draw_instructions():
     pygame.draw.rect(screen, RED, (WIDTH // 2 - 50, HEIGHT - 100, 100, 50))
     back_text = small_font.render("Back", True, WHITE)
     screen.blit(back_text, (WIDTH // 2 - back_text.get_width() // 2, HEIGHT - 100))
+def draw_lose_screen():
+    screen.fill(BG)
+    lose_text = font.render("You Lost!", True, RED)
+    screen.blit(lose_text, (WIDTH // 2 - lose_text.get_width() // 2, HEIGHT // 3))
+    grinch_won = instructional_font2.render("The Grinch Stole Everyone's presents", True, RED)
+    screen.blit(grinch_won,(200,280))
+    grinch_won2 = instructional_font2.render("Everybodies Christmas is ruined", True, RED)
+    screen.blit(grinch_won2,(200,300))
+    grinch_won2 = instructional_font2.render("You have failed all of us...", True, RED)
+    screen.blit(grinch_won2,(200,320))
+    restart_text = small_font.render("Press R to Restart", True, BLACK)
+    screen.blit(restart_text, (200,380))
+    
+    pygame.display.flip()
 
 # Game loop
 running = True
@@ -142,12 +157,9 @@ while running:
             running = False
         elif event.type == pygame.MOUSEBUTTONDOWN:
             mouse_x, mouse_y = event.pos
-
             if game_state == "menu":
-                # Check if Start Game button is clicked
                 if WIDTH // 2 - 100 <= mouse_x <= WIDTH // 2 + 100 and HEIGHT // 2 - 50 <= mouse_y <= HEIGHT // 2:
                     game_state = "game"
-                # Check if Instructions button is clicked
                 elif WIDTH // 2 - 100 <= mouse_x <= WIDTH // 2 + 100 and HEIGHT // 2 + 20 <= mouse_y <= HEIGHT // 2 + 70:
                     game_state = "instructions"
 
@@ -158,19 +170,38 @@ while running:
                 if WIDTH // 2 - 50 <= mouse_x <= WIDTH // 2 + 50 and HEIGHT - 100 <= mouse_y <= HEIGHT - 50:
                     game_state = "menu"
 
-        elif event.type == pygame.KEYDOWN and game_state == "game":
-            if event.key == pygame.K_RETURN:
-                # Check if answer is correct
-                if user_answer.isdigit() and int(user_answer) == answer:
-                    score += 1
-                    user_answer = ""
-                    generate_question(difficulty)
-                else:
-                    user_answer = "" 
-            elif event.key == pygame.K_BACKSPACE:
-                user_answer = user_answer[:-1]  
-            elif event.unicode.isdigit():
-                user_answer += event.unicode  
+        elif event.type == pygame.KEYDOWN:
+            if game_state == "lose" and event.key == pygame.K_r:
+                game_state = "menu"
+                score = 10
+                lives = 3
+                difficulty = "easy"
+                user_answer = ""
+                generate_question(difficulty)
+            elif game_state == "game":
+                if event.key == pygame.K_RETURN:
+                    if user_answer.isdigit() and int(user_answer) == answer:
+                        score -= 1
+                        user_answer = ""
+                        if score <= 5:
+                            difficulty = "hard"
+                        generate_question(difficulty)
+                        if difficulty == "hard":
+                            hard_text = instructional_font2.render("HARD MODE!!!", True, BLACK)
+                            screen.blit(hard_text, (300, 50))
+                    else:
+                        lives -= 1
+                        user_answer = ""
+                        if lives <= 0:
+                            game_state = "lose"
+                elif event.key == pygame.K_BACKSPACE:
+                    user_answer = user_answer[:-1]
+                elif event.unicode.isdigit():
+                    user_answer += event.unicode
+                elif event.key == pygame.K_BACKSPACE:
+                    user_answer = user_answer[:-1]  
+                elif event.unicode.isdigit():
+                    user_answer += event.unicode  
 
     if game_state == "menu":
         draw_menu()
@@ -188,7 +219,7 @@ while running:
         line1 = instructional_font2.render("The grinch has captured you and stolen Christmas! In order to save ", True, RED)
         line2 = instructional_font2.render ("Christmas Day and be the world's hero you must complete these math questions", True, RED)
         line3 = instructional_font2.render("Each question right is equal to 1 damage to The Grinch", True, RED)
-        line4 = instructional_font2.render("Each question right is equal to one live lost for you", True, RED ) 
+        line4 = instructional_font2.render("Each question wrong is equal to one live lost for you", True, RED ) 
         line5 = instructional_font2.render("The Grinch has 10 Health and you have 3 lives", True, RED)
         line6 = instructional_font.render("Goodluck on your adventure, Warrior", True, RED)
 
@@ -206,14 +237,15 @@ while running:
     elif game_state == "game":
         screen.fill(BG)
         #Top to Bottom
+
         pygame.draw.rect(screen, GREEN, (25, 50, 20, 800))
         pygame.draw.rect(screen, RED, (85, 50, 20, 800))
-        pygame.draw.rect(screen, GREEN, (145, 0, 20, 800))
-        pygame.draw.rect(screen, RED, (195, 0, 20, 800))
-        pygame.draw.rect(screen, GREEN, (245, 0, 20, 800))
-        pygame.draw.rect(screen, RED, (295, 0, 20, 800))
-        pygame.draw.rect(screen, GREEN, (345, 0, 20, 800))
-        pygame.draw.rect(screen, RED, (395, 0, 20, 800))
+        pygame.draw.rect(screen, GREEN, (145, 50, 20, 800))
+        pygame.draw.rect(screen, RED, (195, 50, 20, 800))
+        pygame.draw.rect(screen, GREEN, (245, 50, 20, 800))
+        pygame.draw.rect(screen, RED, (295, 50, 20, 800))
+        pygame.draw.rect(screen, GREEN, (345, 50, 20, 800))
+        pygame.draw.rect(screen, RED, (395, 50, 20, 800))
         pygame.draw.rect(screen, GREEN, (445, 0, 20, 800))
         pygame.draw.rect(screen, RED, (495, 0, 20, 800))
         pygame.draw.rect(screen, GREEN, (545, 0, 20, 800))
@@ -224,7 +256,7 @@ while running:
         pygame.draw.rect(screen, RED, (795, 0, 20, 800))
 
         # Left to Right
-        pygame.draw.rect(screen, GREEN, (0, 50, 145, 10))
+        pygame.draw.rect(screen, GREEN, (0, 50, 445, 10))
         pygame.draw.rect(screen, RED, (0, 110, 195, 10))
         pygame.draw.rect(screen, GREEN, (0, 170, 245, 10))
         pygame.draw.rect(screen, RED, (0, 230, 295, 10))
@@ -265,9 +297,23 @@ while running:
         user_text = font.render(user_answer, True, BLACK if user_answer else BLACK)
         screen.blit(user_text, (WIDTH // 2 - user_text.get_width() // 2, HEIGHT // 2))
 
-        # Display score
-        score_text = score_font.render(f"Score: {score}", True, BLACK)
+        # Display grinch health
+        score_text = score_font.render(f"Grinch Health: {score}", True, BLACK)
         screen.blit(score_text, (0, 10))
+        
+        #lives
+        lives_text = score_font.render(f"Lives: {lives}", True, BLACK)
+        screen.blit(lives_text,(300,10))
+
+
+
+        if difficulty == "hard":
+            hard_text = font.render("HARD MODE!!!", True, BLACK)
+            pygame.draw.rect(screen, RED, (200, 60, 400, 80))
+            screen.blit(hard_text, (240, 60))
+
+    elif game_state == "lose":
+        draw_lose_screen()
 
 
     pygame.display.flip()
