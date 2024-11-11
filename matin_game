@@ -1,12 +1,13 @@
 #star shooter, christmas style, shooting the grinch before he comes down the chimney
 
 # TO DO:
-# - Implement shooting
 # - Draw grinch
 # - Determine random locations and movement of Grinch's
 # - Implement sound and instructions
+# - Implement menu
 
 import pygame
+import random
 from pygame.locals import *
 pygame.init()
 
@@ -17,13 +18,28 @@ SIZE = (WIDTH, HEIGHT)
 screen = pygame.display.set_mode(SIZE)
 clock = pygame.time.Clock()
 
+grinch = pygame.transform.scale(pygame.image.load('Evil_Grinch.png').convert_alpha(), (100, 100))
+
 # ---------------------------
 # Initialize global variables
 
 sugar_shooter_x = 250
 sugar_shooter_y = 350
+
 bullet_y = 325
 
+bullet_pos = []
+
+grinch_x = random.randint(40, 600)
+grinch_y = 0
+
+grinch_x = 0
+grinch_y = 0
+grinchy = []
+
+clocky = 0
+
+pressed_fire_previous_frame = False
 # ---------------------------
 
 running = True
@@ -79,25 +95,55 @@ while running:
     brick_lines = pygame.draw.rect(screen, (255, 255, 255), pygame.Rect(400, 500, 15, 100))
 
     # MOVEMENTS
-    bullet_pos = []
     if keys [pygame.K_LEFT] and sugar_shooter_x > 0:
         sugar_shooter_x -= 10
     if keys [pygame.K_RIGHT] and sugar_shooter_x < 590:
         sugar_shooter_x += 10  
+    if not pressed_fire_previous_frame and keys[pygame.K_UP]:
+        bullet_pos.append([sugar_shooter_x + 3, bullet_y])
 
-    if keys[pygame.K_UP]:
-        bullet_pos.append(sugar_shooter_x + 3)
-    for position in bullet_pos:
-        bullet = pygame.draw.ellipse(screen, (0, 0, 0), pygame.Rect(position, bullet_y, 20, 20))
+    for bullet in bullet_pos:
+        bullet[1] -= 500 / 30
+        pygame.draw.rect(screen, (0, 255, 0), pygame.Rect(bullet[0], bullet[1], 20, 20))
+
+
+    if clocky < 10: # Difficulty easy
+        if clocky % 2 == 0:
+            grinchy.append([random.randint(0,640),0])
+    elif clocky < 20: # Difficulty medium
+        grinchy.append([random.randint(0,600),0])
+        grinchy.append([random.randint(0,600),0])
+    elif clocky < 30: # Difficulty hard
+        grinchy.append([random.randint(0,600),0])
+        grinchy.append([random.randint(0,600),0])
+        grinchy.append([random.randint(0,600),0])
+    elif clocky < 40: # Difficulty harder
+        grinchy.append([random.randint(0,600),0])
+        grinchy.append([random.randint(0,600),0])
+        grinchy.append([random.randint(0,600),0])
+        grinchy.append([random.randint(0,600),0])
+    elif clocky > 40: # Difficulty Extreme
+        grinchy.append([random.randint(0,600),0])
+        grinchy.append([random.randint(0,600),0])
+        grinchy.append([random.randint(0,600),0])
+        grinchy.append([random.randint(0,600),0])
+        grinchy.append([random.randint(0,600),0])
     
+    for gronch in grinchy:
+        gronch[1] += 20 / 30
+        screen.blit(grinch,(gronch[0], gronch[1]))
+
     # DRAWING
     sugar_shooter1 = pygame.draw.rect(screen, (255, 255, 255), pygame.Rect(sugar_shooter_x, sugar_shooter_y, 25, 120))
     sugar_shooter1 = pygame.draw.rect(screen, (255, 0, 0), pygame.Rect(sugar_shooter_x, sugar_shooter_y, 25, 25))
     sugar_shooter1 = pygame.draw.rect(screen, (255, 0, 0), pygame.Rect(sugar_shooter_x, sugar_shooter_y + 50, 25, 25))
     sugar_shooter1 = pygame.draw.rect(screen, (255, 0, 0), pygame.Rect(sugar_shooter_x, sugar_shooter_y + 100, 25, 25))
     sugar_shooter1 = pygame.draw.rect(screen, (255, 255, 255), pygame.Rect(sugar_shooter_x + 25, sugar_shooter_y + 100, 25, 25))
+    
+    pressed_fire_previous_frame = keys[pygame.K_UP]
 
     pygame.display.flip()
     clock.tick(30)
+    clocky += 1/30
     #---------------------------
 pygame.quit()
