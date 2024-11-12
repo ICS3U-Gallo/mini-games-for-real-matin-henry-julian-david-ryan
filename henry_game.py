@@ -27,6 +27,7 @@ answer = 0
 user_answer = ""
 difficulty = "easy"
 game_state = "menu" 
+x_pos = 80
 
 def generate_question(difficulty):
     global question, answer
@@ -148,6 +149,7 @@ def draw_lose_screen():
     
     pygame.display.flip()
 
+
 # Game loop
 running = True
 generate_question(difficulty)
@@ -189,6 +191,8 @@ while running:
                         if difficulty == "hard":
                             hard_text = instructional_font2.render("HARD MODE!!!", True, BLACK)
                             screen.blit(hard_text, (300, 50))
+                        if score == 0:
+                            game_state = "win"
                     else:
                         lives -= 1
                         user_answer = ""
@@ -314,9 +318,38 @@ while running:
 
     elif game_state == "lose":
         draw_lose_screen()
+    elif game_state == "win":
+        while x_pos < 900:
+            screen.fill(BG)
+            win_text = instructional_font.render("You WIN!!", True, RED)
+            screen.blit(win_text, (30,10))
+            win_text1 = instructional_font.render("The Grinch has Ran Away!", True, RED)
+            screen.blit(win_text1, (30,70))
+            win2_text = font.render("Have a Merry Christmas!", True, RED)
+            screen.blit(win2_text, (30, 130))
+            x_pos += 3
+            pygame.draw.ellipse(screen, GREEN, (x_pos, 250, 120, 160))
+            pygame.draw.polygon(screen, RED, [(x_pos + 10, 270), (x_pos + 110, 270), (x_pos + 60, 190)])
+            pygame.draw.circle(screen, WHITE, (x_pos + 60, 190), 10)
+            pygame.draw.rect(screen, WHITE, (x_pos, 270, 120, 15))
+            pygame.draw.circle(screen, WHITE, (x_pos + 35, 310), 12)
+            pygame.draw.circle(screen, WHITE, (x_pos + 85, 310), 12)
+            pygame.draw.circle(screen, BLACK, (x_pos + 35, 310), 6)
+            pygame.draw.circle(screen, BLACK, (x_pos + 85, 310), 6)
+            pygame.draw.circle(screen, BLACK, (x_pos + 60, 340), 5)
+            pygame.draw.arc(screen, RED, (x_pos + 35, 365, 50, 20), 0, 3.14, 3)
+            pygame.draw.line(screen, BLACK, (x_pos + 25, 295), (x_pos + 45, 285), 3)
+            pygame.draw.line(screen, BLACK, (x_pos + 95, 295), (x_pos + 75, 285), 3)
+            pygame.draw.rect(screen, GREEN, (x_pos + 40, 420, 40, 100))
+            pygame.draw.circle(screen, RED, (x_pos + 60, 440), 5)
+            pygame.draw.circle(screen, RED, (x_pos + 60, 460), 5)
+            pygame.draw.circle(screen, RED, (x_pos + 60, 480), 5)
+            pygame.draw.line(screen, GREEN, (x_pos + 40, 430), (x_pos + 10, 480), 8)
+            pygame.draw.line(screen, GREEN, (x_pos + 80, 430), (x_pos + 110, 480), 8)
+            pygame.display.flip()
+
 
 
     pygame.display.flip()
     clock.tick(30)
-
 pygame.quit()
