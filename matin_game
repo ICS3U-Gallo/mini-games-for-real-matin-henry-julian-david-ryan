@@ -8,7 +8,6 @@
 
 import pygame
 import random
-from pygame.locals import *
 pygame.init()
 
 WIDTH = 640
@@ -37,7 +36,7 @@ grinch_x = 0
 grinch_y = 0
 grinchy = []
 
-clocky = 0
+frames = 0
 
 pressed_fire_previous_frame = False
 # ---------------------------
@@ -104,33 +103,25 @@ while running:
 
     for bullet in bullet_pos:
         bullet[1] -= 500 / 30
-        pygame.draw.rect(screen, (0, 255, 0), pygame.Rect(bullet[0], bullet[1], 20, 20))
+        bullet_shot = pygame.draw.rect(screen, (0, 255, 0), pygame.Rect(bullet[0], bullet[1], 20, 20))
+    
+    if frames < 500: # Difficulty easy
+        spawn_rate = 50
+    elif frames < 1000: # Difficulty medium
+        spawn_rate = 40
+    elif frames < 1500: # Difficulty hard
+        spawn_rate = 30
+    elif frames < 2000: # Difficulty harder
+        spawn_rate = 20
+    elif frames < 2500: # Difficulty extreme
+        spawn_rate = 10
 
-
-    if clocky < 10: # Difficulty easy
-        if clocky % 2 == 0:
-            grinchy.append([random.randint(0,640),0])
-    elif clocky < 20: # Difficulty medium
-        grinchy.append([random.randint(0,600),0])
-        grinchy.append([random.randint(0,600),0])
-    elif clocky < 30: # Difficulty hard
-        grinchy.append([random.randint(0,600),0])
-        grinchy.append([random.randint(0,600),0])
-        grinchy.append([random.randint(0,600),0])
-    elif clocky < 40: # Difficulty harder
-        grinchy.append([random.randint(0,600),0])
-        grinchy.append([random.randint(0,600),0])
-        grinchy.append([random.randint(0,600),0])
-        grinchy.append([random.randint(0,600),0])
-    elif clocky > 40: # Difficulty Extreme
-        grinchy.append([random.randint(0,600),0])
-        grinchy.append([random.randint(0,600),0])
-        grinchy.append([random.randint(0,600),0])
-        grinchy.append([random.randint(0,600),0])
-        grinchy.append([random.randint(0,600),0])
+    if frames % spawn_rate == 0:
+        randy = random.randint(0,580)
+        grinchy.append([randy,0])
     
     for gronch in grinchy:
-        gronch[1] += 20 / 30
+        gronch[1] += 1
         screen.blit(grinch,(gronch[0], gronch[1]))
 
     # DRAWING
@@ -144,6 +135,8 @@ while running:
 
     pygame.display.flip()
     clock.tick(30)
-    clocky += 1/30
+
+    frames += 1
+    print(frames)
     #---------------------------
 pygame.quit()
