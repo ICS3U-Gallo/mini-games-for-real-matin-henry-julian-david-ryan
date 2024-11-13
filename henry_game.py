@@ -13,6 +13,11 @@ WHITE = (255, 255, 255)
 BLACK = (0, 0, 0)
 GREEN = (3, 128, 40)
 RED = (245, 95, 95)
+BLUE = (7, 116, 163)
+PURPLE = (136, 4, 212)
+LIME = (122, 212, 4)
+ORANGE = (237, 174, 71)
+DBLUE = (4, 6, 135)
 
 font = pygame.font.SysFont("comicsansms", 50)
 small_font = pygame.font.SysFont("comicsansms", 30)
@@ -148,7 +153,10 @@ def draw_lose_screen():
     screen.blit(restart_text, (200,380))
     
     pygame.display.flip()
-
+def draw_present(x, y, width, height, color):
+    pygame.draw.rect(screen, color, (x, y, width, height))
+    pygame.draw.line(screen, BLACK, (x + width // 2, y), (x + width // 2, y + height), 3)
+    pygame.draw.line(screen, BLACK, (x, y + height // 2), (x + width, y + height // 2), 3)
 
 # Game loop
 running = True
@@ -180,6 +188,12 @@ while running:
                 difficulty = "easy"
                 user_answer = ""
                 generate_question(difficulty)
+            elif game_state == "win" and event.key == pygame.K_m:
+                game_state = "menu"
+                score = 10
+                lives = 3
+                difficulty = "easy"
+                user_answer = ""
             elif game_state == "game":
                 if event.key == pygame.K_RETURN:
                     if user_answer.isdigit() and int(user_answer) == answer:
@@ -191,7 +205,7 @@ while running:
                         if difficulty == "hard":
                             hard_text = instructional_font2.render("HARD MODE!!!", True, BLACK)
                             screen.blit(hard_text, (300, 50))
-                        if score == 0:
+                        if score == 9:
                             game_state = "win"
                     else:
                         lives -= 1
@@ -347,8 +361,21 @@ while running:
             pygame.draw.line(screen, GREEN, (x_pos + 40, 430), (x_pos + 10, 480), 8)
             pygame.draw.line(screen, GREEN, (x_pos + 80, 430), (x_pos + 110, 480), 8)
             pygame.display.flip()
-
-
+        if x_pos >= 900:
+            restart_text = instructional_font2.render("Press M to return to Main Menu", True, BLACK)
+            screen.blit(restart_text, (250, 250))
+            pygame.draw.circle
+            present_colors = [RED, GREEN, BLUE, PURPLE, DBLUE, ORANGE, LIME]
+            i = 0
+            while i < 100:
+                x = random.randint(0, 800)
+                y = random.randint(300, 800)
+                width = random.randint(40, 60)
+                height = random.randint(40, 60)
+                color = random.choice(present_colors)
+                draw_present(x, y, width, height, color)
+                i += 1
+                pygame.display.flip()
 
     pygame.display.flip()
     clock.tick(30)
