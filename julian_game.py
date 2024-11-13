@@ -1,4 +1,4 @@
-import pygame
+import pygame 
 import random
 
 pygame.init()
@@ -19,6 +19,8 @@ BLUE = (0, 0, 255)
 YELLOW = (255, 255, 0)
 BROWN = (165, 42, 42)
 LIGHT_BLUE = (173, 216, 230)
+DARK_GREEN = (0, 100, 0)
+SILVER     = (192, 192, 192)
 
 # Font setup
 font = pygame.font.Font(None, 36)
@@ -30,6 +32,7 @@ in_menu = True
 show_instructions = True
 in_game = False
 hearts = 3
+presents_collected = 0
 
 # Game variables
 runner_x = WIDTH // 2
@@ -40,24 +43,22 @@ runner_radius = 10  # Smaller player size
 # House setup
 house_width = 30
 house_height = 30
-house1_x = 50  # House 1 on the left
-house2_x = WIDTH - house_width - 50  # House 2 on the right
+house1_x = 50
+house2_x = WIDTH - house_width - 50
 
 # Tree setup
-tree_width = 40
-tree_height = 40  # Size of the trees
+tree_width = 30
+tree_height = 40
 
 # Tree and house scrolling
-spacing = 200  # Space between each house and tree set
+spacing = 200
 scroll_speed = 5
-house_tree_positions = [-spacing * i for i in range(3)]  # Three sets of positions, spaced out
+house_tree_positions = [-spacing * i for i in range(3)]
 
 # Snowball shooter variables
 snowball_speed = 5
 snowballs = []
-shooter_x = WIDTH // 2
-shooter_y = HEIGHT - 30
-shooter_direction = 2  # Shooter's movement speed
+shooters = [[WIDTH // 2, HEIGHT - 30, 2]]  # list of [x, y, direction] for each shooter
 
 # Barrier setup
 left_barrier = 50
@@ -66,20 +67,11 @@ top_barrier = 50
 bottom_barrier = HEIGHT - 50
 
 # Snowflakes setup
-snowflakes = []
-for _ in range(100):
-    snowflake_x = random.randint(0, WIDTH)
-    snowflake_y = random.randint(-HEIGHT, 0)
-    snowflake_size = random.randint(2, 5)
-    snowflake_speed = random.uniform(1, 3)
-    snowflakes.append([snowflake_x, snowflake_y, snowflake_size, snowflake_speed])
+snowflakes = [[random.randint(0, WIDTH), random.randint(-HEIGHT, 0), random.randint(2, 5), random.uniform(1, 3)] for _ in range(100)]
 
-# Function to reset the game
-def reset_game():
-    global hearts, snowballs
-    hearts = 3
-    snowballs = []
-    runner_x, runner_y = WIDTH // 2, HEIGHT // 2
+# Presents setup
+presents = []
+present_spawn_chance = 0.01  # 1% chance to spawn a present each frame
 
 # Main game loop
 while running:
@@ -91,23 +83,24 @@ while running:
     if in_menu:
         keys = pygame.key.get_pressed()
 
-        # Show instructions screen before game starts
         if show_instructions:
-            if keys[pygame.K_RETURN]:  # Continue to main menu
+            if keys[pygame.K_RETURN]:
                 show_instructions = False
         else:
-            if keys[pygame.K_RETURN]:  # Start game
+            if keys[pygame.K_RETURN]:
                 in_menu = False
                 in_game = True
-                reset_game()
-
-            elif keys[pygame.K_q]:  # Quit game
+                hearts = 3
+                presents_collected = 0
+                snowballs = []
+                shooters = [[WIDTH // 2, HEIGHT - 30, 2]]  # Reset to one shooter
+            elif keys[pygame.K_q]:
                 running = False
 
         # --- DRAWING (Menu & Instructions) ---
         screen.fill(WHITE)
 
-        # Draw snowflakes in menu
+        # Snowflake effect on the menu
         for snowflake in snowflakes:
             snowflake[1] += snowflake[3]
             if snowflake[1] > HEIGHT:
@@ -127,20 +120,25 @@ while running:
             screen.blit(continue_text, (WIDTH // 2 - continue_text.get_width() // 2, HEIGHT // 2))
 
         else:
+            # Draw Christmas tree in the menu
+            pygame.draw.polygon(screen, DARK_GREEN, [(WIDTH // 2, HEIGHT // 4), (WIDTH // 2 - 40, HEIGHT // 2), (WIDTH // 2 + 40, HEIGHT // 2)])
+            pygame.draw.polygon(screen, DARK_GREEN, [(WIDTH // 2, HEIGHT // 4 + 30), (WIDTH // 2 - 30, HEIGHT // 2 - 10), (WIDTH // 2 + 30, HEIGHT // 2 - 10)])
+            pygame.draw.rect(screen, BROWN, (WIDTH // 2 - 10, HEIGHT // 2, 20, 20))
+            pygame.draw.circle(screen, YELLOW, (WIDTH // 2, HEIGHT // 4), 8)  # Star on the tree
+
             title_text = large_font.render("Merry Christmas!", True, RED)
             start_text = font.render("Press Enter to Start", True, GREEN)
             quit_text = font.render("Press Q to Quit", True, GREEN)
 
-            screen.blit(title_text, (WIDTH // 2 - title_text.get_width() // 2, HEIGHT // 4))
-            screen.blit(start_text, (WIDTH // 2 - start_text.get_width() // 2, HEIGHT // 2 - 40))
-            screen.blit(quit_text, (WIDTH // 2 - quit_text.get_width() // 2, HEIGHT // 2 + 40))
+            screen.blit(title_text, (WIDTH // 2 - title_text.get_width() // 2, HEIGHT // 4 + 70))
+            screen.blit(start_text, (WIDTH // 2 - start_text.get_width() // 2, HEIGHT // 2 + 40))
+            screen.blit(quit_text, (WIDTH // 2 - quit_text.get_width() // 2, HEIGHT // 2 + 80))
 
         pygame.display.flip()
 
     elif in_game:
         keys = pygame.key.get_pressed()
 
-        # Move the character (runner) while respecting barriers
         if keys[pygame.K_UP] and runner_y > top_barrier:
             runner_y -= runner_speed
         if keys[pygame.K_DOWN] and runner_y < bottom_barrier:
@@ -150,28 +148,32 @@ while running:
         if keys[pygame.K_RIGHT] and runner_x < right_barrier:
             runner_x += runner_speed
 
-        # Update positions of houses and trees for even spacing and infinite scrolling
+        # Scroll houses and trees
         for i in range(len(house_tree_positions)):
             house_tree_positions[i] += scroll_speed
             if house_tree_positions[i] > HEIGHT:
                 house_tree_positions[i] = -spacing * (len(house_tree_positions) - 1)
 
-        # Move the shooter side to side
-        shooter_x += shooter_direction
-        if shooter_x <= 50 or shooter_x >= WIDTH - 50:
-            shooter_direction *= -1  # Reverse direction at the edges
+        # Move and add shooters as presents are collected
+        if presents_collected == 4 and len(shooters) == 1:
+            shooters.append([WIDTH // 4, HEIGHT - 30, 2])
+        if presents_collected == 7 and len(shooters) == 2:
+            shooters.append([3 * WIDTH // 4, HEIGHT - 30, 2])
 
-        # Snowball shooting mechanism
-        if random.random() < 0.03:  # 3% chance to shoot a snowball each frame
-            snowballs.append([shooter_x, shooter_y])
+        # Update shooters and snowballs
+        for shooter in shooters:
+            shooter[0] += shooter[2]
+            if shooter[0] <= left_barrier or shooter[0] >= right_barrier:
+                shooter[2] *= -1
+            if random.random() < 0.03:
+                snowballs.append([shooter[0], shooter[1]])
 
-        # Update snowball positions
+        # Move snowballs
         for snowball in snowballs:
             snowball[1] -= snowball_speed
             if snowball[1] < 0:
                 snowballs.remove(snowball)
 
-        # Check for collisions between runner and snowballs
         for snowball in snowballs[:]:
             if runner_x - runner_radius < snowball[0] < runner_x + runner_radius and runner_y - runner_radius < snowball[1] < runner_y + runner_radius:
                 hearts -= 1
@@ -180,10 +182,30 @@ while running:
                     in_game = False
                     in_menu = True
 
-        # --- DRAWING (Game Loop) ---
+        # Spawn and collect presents
+        if random.random() < present_spawn_chance:
+            present_x = random.randint(left_barrier, right_barrier)
+            present_y = random.randint(top_barrier, bottom_barrier)
+            presents.append([present_x, present_y])
+
+        for present in presents[:]:
+            if runner_x - runner_radius < present[0] < runner_x + runner_radius and runner_y - runner_radius < present[1] < runner_y + runner_radius:
+                presents_collected += 1
+                presents.remove(present)
+                if presents_collected % 2 == 0:
+                    snowball_speed += 1
+                if presents_collected >= 10:
+                    win_text = large_font.render("You Win!", True, GREEN)
+                    screen.blit(win_text, (WIDTH // 2 - win_text.get_width() // 2, HEIGHT // 2))
+                    pygame.display.flip()
+                    pygame.time.delay(2000)
+                    in_game = False
+                    in_menu = True
+
+        # --- DRAWING ---
         screen.fill(WHITE)
 
-        # Draw snowflakes
+        # Snowfall effect
         for snowflake in snowflakes:
             snowflake[1] += snowflake[3]
             if snowflake[1] > HEIGHT:
@@ -191,54 +213,39 @@ while running:
                 snowflake[0] = random.randint(0, WIDTH)
             pygame.draw.circle(screen, WHITE, (int(snowflake[0]), int(snowflake[1])), snowflake[2])
 
-        # Draw houses and trees beyond the barrier
-        for y_position in house_tree_positions:
-            # Draw house 1 on the left, beyond the barrier
-            pygame.draw.rect(screen, BROWN, (house1_x - 50, y_position, house_width, house_height))  # House body
-            pygame.draw.polygon(screen, BROWN, [(house1_x - 50, y_position), 
-                                               (house1_x - 50 + house_width // 2, y_position - 20), 
-                                               (house1_x - 50 + house_width, y_position)])  # Roof
-            pygame.draw.rect(screen, YELLOW, (house1_x - 50 + 5, y_position + 5, 10, 10))  # Window
+        # Draw Christmas trees and houses
+        for pos in house_tree_positions:
+            pygame.draw.polygon(screen, DARK_GREEN, [(50, pos), (20, pos + 60), (80, pos + 60)])  # Christmas tree
+            pygame.draw.polygon(screen, DARK_GREEN, [(50, pos + 20), (30, pos + 80), (70, pos + 80)])  # Lower branches
+            pygame.draw.rect(screen, BROWN, (45, pos + 50, 10, 10))  # Trunk
+            pygame.draw.rect(screen, LIGHT_BLUE, (house1_x, pos, house_width, house_height))
+            pygame.draw.rect(screen, LIGHT_BLUE, (house2_x, pos, house_width, house_height))
+            pygame.draw.rect(screen, RED, (house1_x + 5, pos + 10, 10, 10))  # Door on house
+            pygame.draw.rect(screen, RED, (house2_x + 5, pos + 10, 10, 10))  # Door on house
 
-            # Draw tree above house 1
-            tree1_x = house1_x - 50 + (house_width // 2) - (tree_width // 2)  # Center the tree above the house
-            tree1_y = y_position - tree_height - 10  # Position the tree higher above the house
-            pygame.draw.polygon(screen, GREEN, [(tree1_x, tree1_y), 
-                                                (tree1_x + tree_width // 2, tree1_y - tree_height), 
-                                                (tree1_x + tree_width, tree1_y)])  # Tree top
-            pygame.draw.rect(screen, BROWN, (tree1_x + (tree_width // 2) - 5, tree1_y, 10, 20))  # Tree trunk
+        # Draw shooter
+        for shooter in shooters:
+            pygame.draw.rect(screen, GREEN, (shooter[0] - 15, shooter[1] - 20, 30, 20))
+            pygame.draw.circle(screen, RED, (shooter[0], shooter[1] - 10), 10)
 
-            # Draw house 2 on the right, beyond the barrier
-            pygame.draw.rect(screen, BROWN, (house2_x + 50, y_position, house_width, house_height))  # House body
-            pygame.draw.polygon(screen, BROWN, [(house2_x + 50, y_position), 
-                                               (house2_x + 50 + house_width // 2, y_position - 20), 
-                                               (house2_x + 50 + house_width, y_position)])  # Roof
-            pygame.draw.rect(screen, YELLOW, (house2_x + 50 + 5, y_position + 5, 10, 10))  # Window
+        # Draw player (runner)
+        pygame.draw.circle(screen, BLUE, (runner_x, runner_y), runner_radius)
 
-            # Draw tree above house 2
-            tree2_x = house2_x + 50 + (house_width // 2) - (tree_width // 2)  # Center the tree above the house
-            tree2_y = y_position - tree_height - 10  # Position the tree higher above the house
-            pygame.draw.polygon(screen, GREEN, [(tree2_x, tree2_y), 
-                                                (tree2_x + tree_width // 2, tree2_y - tree_height), 
-                                                (tree2_x + tree_width, tree2_y)])  # Tree top
-            pygame.draw.rect(screen, BROWN, (tree2_x + (tree_width // 2) - 5, tree2_y, 10, 20))  # Tree trunk
+        # Draw presents
+        for present in presents:
+            pygame.draw.rect(screen, YELLOW, (present[0] - 5, present[1] - 5, 10, 10))
 
         # Draw snowballs
         for snowball in snowballs:
-            pygame.draw.circle(screen, LIGHT_BLUE, (int(snowball[0]), int(snowball[1])), 5)
+            pygame.draw.circle(screen, SILVER   , (snowball[0], snowball[1]), 5)
 
-        # Draw shooter at the bottom of the screen
-        pygame.draw.rect(screen, BROWN, (shooter_x - 15, shooter_y, 30, 10))  # Shooter base
-        pygame.draw.polygon(screen, BROWN, [(shooter_x - 5, shooter_y - 10), 
-                                            (shooter_x + 5, shooter_y - 20), 
-                                            (shooter_x + 15, shooter_y - 10)])  # Shooter nozzle
+        # Draw hearts
+        for i in range(hearts):
+            pygame.draw.circle(screen, RED, (20 + i * 30, 20), 10)
 
-        # Draw runner (player)
-        pygame.draw.circle(screen, BLUE, (runner_x, runner_y), runner_radius)
-
-        # Display hearts
-        hearts_text = font.render(f"Hearts: {hearts}", True, RED)
-        screen.blit(hearts_text, (10, 10))
+        # Draw presents collected
+        presents_text = font.render("Presents: " + str(presents_collected), True, BLACK)
+        screen.blit(presents_text, (WIDTH - presents_text.get_width() - 20, 20))
 
         pygame.display.flip()
         clock.tick(60)
