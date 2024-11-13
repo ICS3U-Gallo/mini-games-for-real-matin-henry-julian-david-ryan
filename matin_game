@@ -37,6 +37,9 @@ grinch_y = 0
 grinchy = []
 
 frames = 0
+j = 0
+
+grinches_removed = 0
 
 pressed_fire_previous_frame = False
 # ---------------------------
@@ -52,11 +55,11 @@ while running:
 
     # BACKGROUND
     screen.fill((115, 44, 14))
+    special_brick_line = pygame.draw.rect(screen, (255, 255, 255), pygame.Rect(0, 0, 640, 15))
     brick_lines = pygame.draw.rect(screen, (255, 255, 255), pygame.Rect(0, 100, 640, 15))
     brick_lines = pygame.draw.rect(screen, (255, 255, 255), pygame.Rect(0, 200, 640, 15))
     brick_lines = pygame.draw.rect(screen, (255, 255, 255), pygame.Rect(0, 300, 640, 15))
     brick_lines = pygame.draw.rect(screen, (255, 255, 255), pygame.Rect(0, 400, 640, 15))
-    brick_lines = pygame.draw.rect(screen, (255, 255, 255), pygame.Rect(0, 0, 640, 15))
 
     brick_lines = pygame.draw.rect(screen, (255, 255, 255), pygame.Rect(50, 0, 15, 100))
     brick_lines = pygame.draw.rect(screen, (255, 255, 255), pygame.Rect(150, 100, 15, 100))
@@ -100,29 +103,39 @@ while running:
         sugar_shooter_x += 10  
     if not pressed_fire_previous_frame and keys[pygame.K_UP]:
         bullet_pos.append([sugar_shooter_x + 3, bullet_y])
+    
+    if frames < 500: # Difficulty easy
+        spawn_rate = 30
+        speed_grinch = 1
+    elif frames < 1000: # Difficulty medium
+        spawn_rate = 20
+        speed_grinch = 1.5
+    elif frames < 1500: # Difficulty hard
+        spawn_rate = 10
+        speed_grinch = 2
+    elif frames < 2000: # Difficulty harder
+        spawn_rate = 5
+        speed_grinch = 2.5
+    elif frames < 2500: # Difficulty extreme
+        spawn_rate = 2
+        speed_grinch = 3
+
+    for gronch in grinchy:
+        gronch[1] += speed_grinch
+        grinchox = screen.blit(grinch,(gronch[0], gronch[1]))
+        for bullet in bullet_pos:
+            bullet_shot = pygame.draw.rect(screen, (0, 255, 0), pygame.Rect(bullet[0], bullet[1], 20, 20))
+            if grinchox.colliderect(bullet_shot):
+                grinchy.remove(gronch)
+                bullet_pos.remove(bullet)
+                grinches_removed += 1
 
     for bullet in bullet_pos:
         bullet[1] -= 500 / 30
-        bullet_shot = pygame.draw.rect(screen, (0, 255, 0), pygame.Rect(bullet[0], bullet[1], 20, 20))
-    
-    if frames < 500: # Difficulty easy
-        spawn_rate = 50
-    elif frames < 1000: # Difficulty medium
-        spawn_rate = 40
-    elif frames < 1500: # Difficulty hard
-        spawn_rate = 30
-    elif frames < 2000: # Difficulty harder
-        spawn_rate = 20
-    elif frames < 2500: # Difficulty extreme
-        spawn_rate = 10
 
     if frames % spawn_rate == 0:
         randy = random.randint(0,580)
         grinchy.append([randy,0])
-    
-    for gronch in grinchy:
-        gronch[1] += 1
-        screen.blit(grinch,(gronch[0], gronch[1]))
 
     # DRAWING
     sugar_shooter1 = pygame.draw.rect(screen, (255, 255, 255), pygame.Rect(sugar_shooter_x, sugar_shooter_y, 25, 120))
@@ -136,7 +149,8 @@ while running:
     pygame.display.flip()
     clock.tick(30)
 
+    print(int(int(pygame.time.get_ticks())/ 1000))
+
     frames += 1
-    print(frames)
     #---------------------------
 pygame.quit()
