@@ -33,6 +33,7 @@ user_answer = ""
 difficulty = "easy"
 game_state = "menu" 
 x_pos = 80
+presents = [{"x": random.randint(0, WIDTH - 50), "y": HEIGHT + random.randint(0, 200), "color": random.choice([RED, GREEN, BLUE, PURPLE, ORANGE])} for _ in range(10, 50)]
 
 def generate_question(difficulty):
     global question, answer
@@ -141,6 +142,12 @@ def draw_instructions():
     screen.blit(back_text, (WIDTH // 2 - back_text.get_width() // 2, HEIGHT - 100))
 def draw_lose_screen():
     screen.fill(BG)
+    for present in presents:
+        draw_present(present["x"], present["y"], 40, 40, present["color"])
+        present["y"] -= 5
+    lose_textbg = pygame.Surface((400, 290), pygame.SRCALPHA)
+    lose_textbg.fill((255, 255, 255, 200))
+    screen.blit(lose_textbg, (180, 200))
     lose_text = font.render("You Lost!", True, RED)
     screen.blit(lose_text, (WIDTH // 2 - lose_text.get_width() // 2, HEIGHT // 3))
     grinch_won = instructional_font2.render("The Grinch Stole Everyone's presents", True, RED)
@@ -151,6 +158,7 @@ def draw_lose_screen():
     screen.blit(grinch_won2,(200,320))
     restart_text = small_font.render("Press R to Restart", True, BLACK)
     screen.blit(restart_text, (200,380))
+
     
     pygame.display.flip()
 def draw_present(x, y, width, height, color):
