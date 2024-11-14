@@ -205,7 +205,7 @@ while running:
                         if difficulty == "hard":
                             hard_text = instructional_font2.render("HARD MODE!!!", True, BLACK)
                             screen.blit(hard_text, (300, 50))
-                        if score == 9:
+                        if score == 0:
                             game_state = "win"
                     else:
                         lives -= 1
