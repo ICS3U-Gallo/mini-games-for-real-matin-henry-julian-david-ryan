@@ -2,7 +2,7 @@ import pygame
 import random
 
 pygame.init()
-#display for the game
+
 width, height = 600, 400
 screen = pygame.display.set_mode((width, height))
 #colours
@@ -15,9 +15,49 @@ orange = (255, 165, 0)
 #speed of snake
 snake_block = 10
 snake_speed = 20
-#font style
+#font
 font_style = pygame.font.SysFont("bahnschrift", 25)
-#drawing the apples(AKA presents)
+# Function to draw the "Play" button
+def draw_button(msg, x, y, w, h, color, text_color):
+    pygame.draw.rect(screen, color, [x, y, w, h])
+    mesg = font_style.render(msg, True, text_color)
+    screen.blit(mesg, [x + (w / 6), y + (h / 4)])
+
+# Function to display the menu screen
+def game_menu():
+    menu = True
+    while menu:
+        screen.fill(white)
+
+        # Title text: "Christmas Snake Game" centered at the top
+        message_text = font_style.render("Christmas Snake Game", True, green)
+        message_width = message_text.get_width()
+        message_height = message_text.get_height()
+        message_x = (width - message_width) // 2  
+        message_y = 20
+
+        screen.blit(message_text, (message_x, message_y))
+
+        
+        draw_button("Press Play", (width - 100) // 2, (height - 50) // 2, 120, 50, red, white)
+
+        pygame.display.update()
+
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                pygame.quit()
+                quit()
+            if event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_p:  
+                    menu = False
+                    gameLoop()
+
+            if event.type == pygame.MOUSEBUTTONDOWN:  # Check if mouse clicks on the "Play" button
+                pos = pygame.mouse.get_pos()
+                if (width - 100) // 2 <= pos[0] <= (width + 100) // 2 and (height - 50) // 2 <= pos[1] <= (height + 50) // 2: #this is where the coordinates are set and to check if the mouse has been clicked in this area
+                    menu = False
+                    gameLoop()
+#drawing the presemts (AKA snake food)
 def draw_present(x, y):
 
     pygame.draw.rect(screen, blue, [x, y, snake_block, snake_block])  
