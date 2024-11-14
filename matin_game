@@ -1,14 +1,16 @@
 #star shooter, christmas style, shooting the grinch before he comes down the chimney
 
 # TO DO:
-# - Draw grinch
-# - Determine random locations and movement of Grinch's
-# - Implement sound and instructions
-# - Implement menu
+# - Menu page
+# - Reset timer when lost
+# - Sound
 
 import pygame
 import random
 pygame.init()
+pygame.font.init()
+font = pygame.font.SysFont("None", 32)
+font_big = pygame.font.SysFont("None", 64)
 
 WIDTH = 640
 HEIGHT = 480
@@ -38,10 +40,19 @@ grinchy = []
 
 frames = 0
 j = 0
+grinches_passed = 0
 
 grinches_removed = 0
 
+lose = False
+menu = True
+
+last_time = 0
+
 pressed_fire_previous_frame = False
+
+# Snowflakes setup
+snowflakes = [[random.randint(0, WIDTH), random.randint(-HEIGHT, 0), random.randint(2, 5), random.uniform(1, 3)] for _ in range(100)]
 # ---------------------------
 
 running = True
@@ -53,103 +64,176 @@ while running:
         if event.type == pygame.QUIT:
             running = False
 
-    # BACKGROUND
-    screen.fill((115, 44, 14))
-    special_brick_line = pygame.draw.rect(screen, (255, 255, 255), pygame.Rect(0, 0, 640, 15))
-    brick_lines = pygame.draw.rect(screen, (255, 255, 255), pygame.Rect(0, 100, 640, 15))
-    brick_lines = pygame.draw.rect(screen, (255, 255, 255), pygame.Rect(0, 200, 640, 15))
-    brick_lines = pygame.draw.rect(screen, (255, 255, 255), pygame.Rect(0, 300, 640, 15))
-    brick_lines = pygame.draw.rect(screen, (255, 255, 255), pygame.Rect(0, 400, 640, 15))
+    if menu == True:
+        screen.fill((102, 252, 255))
+        for snowflake in snowflakes:
+            snowflake[1] += snowflake[3]
+            if snowflake[1] > HEIGHT:
+                snowflake[1] = random.randint(-HEIGHT, 0)
+                snowflake[0] = random.randint(0, WIDTH)
+            pygame.draw.circle(screen, (255,255,255), (int(snowflake[0]), int(snowflake[1])), snowflake[2])
+        
+        menu_button = pygame.draw.rect(screen, (33, 205, 252), pygame.Rect(100, 100, 440, 75))
+        menu_button = pygame.draw.rect(screen, (33, 205, 252), pygame.Rect(100, 390, 440, 75))
+        menu_button = pygame.draw.rect(screen, (33, 205, 252), pygame.Rect(230, 230, 180, 100))
 
-    brick_lines = pygame.draw.rect(screen, (255, 255, 255), pygame.Rect(50, 0, 15, 100))
-    brick_lines = pygame.draw.rect(screen, (255, 255, 255), pygame.Rect(150, 100, 15, 100))
-    brick_lines = pygame.draw.rect(screen, (255, 255, 255), pygame.Rect(250, 200, 15, 100))
-    brick_lines = pygame.draw.rect(screen, (255, 255, 255), pygame.Rect(350, 300, 15, 100))
-    brick_lines = pygame.draw.rect(screen, (255, 255, 255), pygame.Rect(450, 400, 15, 100))
-    brick_lines = pygame.draw.rect(screen, (255, 255, 255), pygame.Rect(550, 500, 15, 100))
+        menu_name = font_big.render(f"Grinch Infestation", 3, (0, 0, 0))
+        screen.blit(menu_name, (130, 120))
 
-    brick_lines = pygame.draw.rect(screen, (255, 255, 255), pygame.Rect(200, 0, 15, 100))
-    brick_lines = pygame.draw.rect(screen, (255, 255, 255), pygame.Rect(300, 100, 15, 100))
-    brick_lines = pygame.draw.rect(screen, (255, 255, 255), pygame.Rect(400, 200, 15, 100))
-    brick_lines = pygame.draw.rect(screen, (255, 255, 255), pygame.Rect(500, 300, 15, 100))
-    brick_lines = pygame.draw.rect(screen, (255, 255, 255), pygame.Rect(600, 400, 15, 100))
-    brick_lines = pygame.draw.rect(screen, (255, 255, 255), pygame.Rect(0, 500, 15, 100))
+        instructions1 = font.render(f"Left/right arrow keys = move", 3, (0, 0, 0))
+        instructions2 = font.render(f"Up arrow key = shoot", 3, (0, 0, 0))
+        screen.blit(instructions1, (160, 400))
+        screen.blit(instructions2, (150, 430))
 
-    brick_lines = pygame.draw.rect(screen, (255, 255, 255), pygame.Rect(200, 0, 15, 100))
-    brick_lines = pygame.draw.rect(screen, (255, 255, 255), pygame.Rect(300, 100, 15, 100))
-    brick_lines = pygame.draw.rect(screen, (255, 255, 255), pygame.Rect(400, 200, 15, 100))
-    brick_lines = pygame.draw.rect(screen, (255, 255, 255), pygame.Rect(500, 300, 15, 100))
-    brick_lines = pygame.draw.rect(screen, (255, 255, 255), pygame.Rect(600, 400, 15, 100))
-    brick_lines = pygame.draw.rect(screen, (255, 255, 255), pygame.Rect(0, 500, 15, 100))
+        play_name = font_big.render(f"Play", 3, (0, 0, 0))
+        screen.blit(play_name, (270, 250))
 
-    brick_lines = pygame.draw.rect(screen, (255, 255, 255), pygame.Rect(350, 0, 15, 100))
-    brick_lines = pygame.draw.rect(screen, (255, 255, 255), pygame.Rect(450, 100, 15, 100))
-    brick_lines = pygame.draw.rect(screen, (255, 255, 255), pygame.Rect(550, 200, 15, 100))
-    brick_lines = pygame.draw.rect(screen, (255, 255, 255), pygame.Rect(50, 300, 15, 100))
-    brick_lines = pygame.draw.rect(screen, (255, 255, 255), pygame.Rect(150, 400, 15, 100))
-    brick_lines = pygame.draw.rect(screen, (255, 255, 255), pygame.Rect(250, 500, 15, 100))
+        play_bringon = font.render(f"(press space)", 3, (0, 0, 0))
+        screen.blit(play_bringon, (250, 300))
+        if keys[pygame.K_SPACE] == True:
+            last_time = timer
+            menu = False
 
-    brick_lines = pygame.draw.rect(screen, (255, 255, 255), pygame.Rect(500, 0, 15, 100))
-    brick_lines = pygame.draw.rect(screen, (255, 255, 255), pygame.Rect(600, 100, 15, 100))
-    brick_lines = pygame.draw.rect(screen, (255, 255, 255), pygame.Rect(100, 200, 15, 100))
-    brick_lines = pygame.draw.rect(screen, (255, 255, 255), pygame.Rect(200, 300, 15, 100))
-    brick_lines = pygame.draw.rect(screen, (255, 255, 255), pygame.Rect(300, 400, 15, 100))
-    brick_lines = pygame.draw.rect(screen, (255, 255, 255), pygame.Rect(400, 500, 15, 100))
-
-    # MOVEMENTS
-    if keys [pygame.K_LEFT] and sugar_shooter_x > 0:
-        sugar_shooter_x -= 10
-    if keys [pygame.K_RIGHT] and sugar_shooter_x < 590:
-        sugar_shooter_x += 10  
-    if not pressed_fire_previous_frame and keys[pygame.K_UP]:
-        bullet_pos.append([sugar_shooter_x + 3, bullet_y])
+    if not lose:
+        timer = int(pygame.time.get_ticks()/ 1000) - last_time
     
-    if frames < 500: # Difficulty easy
-        spawn_rate = 30
-        speed_grinch = 1
-    elif frames < 1000: # Difficulty medium
-        spawn_rate = 20
-        speed_grinch = 1.5
-    elif frames < 1500: # Difficulty hard
-        spawn_rate = 10
-        speed_grinch = 2
-    elif frames < 2000: # Difficulty harder
-        spawn_rate = 5
-        speed_grinch = 2.5
-    elif frames < 2500: # Difficulty extreme
-        spawn_rate = 2
-        speed_grinch = 3
+    if not lose and menu == False:
+        # BACKGROUND
+        screen.fill((115, 44, 14))
+        special_brick_line = pygame.draw.rect(screen, (255, 255, 255), pygame.Rect(0, 0, 640, 15))
+        special_brick_line2 = pygame.draw.rect(screen, (115, 44, 14), pygame.Rect(0, 470, 640, 15))
+        brick_lines = pygame.draw.rect(screen, (255, 255, 255), pygame.Rect(0, 100, 640, 15))
+        brick_lines = pygame.draw.rect(screen, (255, 255, 255), pygame.Rect(0, 200, 640, 15))
+        brick_lines = pygame.draw.rect(screen, (255, 255, 255), pygame.Rect(0, 300, 640, 15))
+        brick_lines = pygame.draw.rect(screen, (255, 255, 255), pygame.Rect(0, 400, 640, 15))
 
-    for gronch in grinchy:
-        gronch[1] += speed_grinch
-        grinchox = screen.blit(grinch,(gronch[0], gronch[1]))
-        for bullet in bullet_pos:
-            bullet_shot = pygame.draw.rect(screen, (0, 255, 0), pygame.Rect(bullet[0], bullet[1], 20, 20))
-            if grinchox.colliderect(bullet_shot):
+        brick_lines = pygame.draw.rect(screen, (255, 255, 255), pygame.Rect(50, 0, 15, 100))
+        brick_lines = pygame.draw.rect(screen, (255, 255, 255), pygame.Rect(150, 100, 15, 100))
+        brick_lines = pygame.draw.rect(screen, (255, 255, 255), pygame.Rect(250, 200, 15, 100))
+        brick_lines = pygame.draw.rect(screen, (255, 255, 255), pygame.Rect(350, 300, 15, 100))
+        brick_lines = pygame.draw.rect(screen, (255, 255, 255), pygame.Rect(450, 400, 15, 100))
+        brick_lines = pygame.draw.rect(screen, (255, 255, 255), pygame.Rect(550, 500, 15, 100))
+
+        brick_lines = pygame.draw.rect(screen, (255, 255, 255), pygame.Rect(200, 0, 15, 100))
+        brick_lines = pygame.draw.rect(screen, (255, 255, 255), pygame.Rect(300, 100, 15, 100))
+        brick_lines = pygame.draw.rect(screen, (255, 255, 255), pygame.Rect(400, 200, 15, 100))
+        brick_lines = pygame.draw.rect(screen, (255, 255, 255), pygame.Rect(500, 300, 15, 100))
+        brick_lines = pygame.draw.rect(screen, (255, 255, 255), pygame.Rect(600, 400, 15, 100))
+        brick_lines = pygame.draw.rect(screen, (255, 255, 255), pygame.Rect(0, 500, 15, 100))
+
+        brick_lines = pygame.draw.rect(screen, (255, 255, 255), pygame.Rect(200, 0, 15, 100))
+        brick_lines = pygame.draw.rect(screen, (255, 255, 255), pygame.Rect(300, 100, 15, 100))
+        brick_lines = pygame.draw.rect(screen, (255, 255, 255), pygame.Rect(400, 200, 15, 100))
+        brick_lines = pygame.draw.rect(screen, (255, 255, 255), pygame.Rect(500, 300, 15, 100))
+        brick_lines = pygame.draw.rect(screen, (255, 255, 255), pygame.Rect(600, 400, 15, 100))
+        brick_lines = pygame.draw.rect(screen, (255, 255, 255), pygame.Rect(0, 500, 15, 100))
+
+        brick_lines = pygame.draw.rect(screen, (255, 255, 255), pygame.Rect(350, 0, 15, 100))
+        brick_lines = pygame.draw.rect(screen, (255, 255, 255), pygame.Rect(450, 100, 15, 100))
+        brick_lines = pygame.draw.rect(screen, (255, 255, 255), pygame.Rect(550, 200, 15, 100))
+        brick_lines = pygame.draw.rect(screen, (255, 255, 255), pygame.Rect(50, 300, 15, 100))
+        brick_lines = pygame.draw.rect(screen, (255, 255, 255), pygame.Rect(150, 400, 15, 100))
+        brick_lines = pygame.draw.rect(screen, (255, 255, 255), pygame.Rect(250, 500, 15, 100))
+
+        brick_lines = pygame.draw.rect(screen, (255, 255, 255), pygame.Rect(500, 0, 15, 100))
+        brick_lines = pygame.draw.rect(screen, (255, 255, 255), pygame.Rect(600, 100, 15, 100))
+        brick_lines = pygame.draw.rect(screen, (255, 255, 255), pygame.Rect(100, 200, 15, 100))
+        brick_lines = pygame.draw.rect(screen, (255, 255, 255), pygame.Rect(200, 300, 15, 100))
+        brick_lines = pygame.draw.rect(screen, (255, 255, 255), pygame.Rect(300, 400, 15, 100))
+        brick_lines = pygame.draw.rect(screen, (255, 255, 255), pygame.Rect(400, 500, 15, 100))
+
+        # MOVEMENTS
+        if keys [pygame.K_LEFT] and sugar_shooter_x > 0:
+            sugar_shooter_x -= 10
+        if keys [pygame.K_RIGHT] and sugar_shooter_x < 590:
+            sugar_shooter_x += 10  
+        if not pressed_fire_previous_frame and keys[pygame.K_UP]:
+            bullet_pos.append([sugar_shooter_x + 3, bullet_y])
+
+        if frames < 500: # Difficulty easy
+            spawn_rate = 30
+            speed_grinch = 1
+        elif frames < 1000: # Difficulty medium
+            spawn_rate = 20
+            speed_grinch = 1.5
+        elif frames < 1500: # Difficulty hard
+            spawn_rate = 10
+            speed_grinch = 2
+        elif frames < 2000: # Difficulty harder
+            spawn_rate = 5
+            speed_grinch = 2.5
+
+        for gronch in grinchy:
+            gronch[1] += speed_grinch
+            grinchox = screen.blit(grinch,(gronch[0], gronch[1]))
+            for bullet in bullet_pos:
+                bullet_shot = pygame.draw.rect(screen, (0, 255, 0), pygame.Rect(bullet[0], bullet[1], 20, 20))
+                if grinchox.colliderect(bullet_shot):
+                    grinchy.remove(gronch)
+                    bullet_pos.remove(bullet)
+                    grinches_removed += 1
+            if grinchox.colliderect(special_brick_line2):
                 grinchy.remove(gronch)
-                bullet_pos.remove(bullet)
-                grinches_removed += 1
+                grinches_passed += 1
 
-    for bullet in bullet_pos:
-        bullet[1] -= 500 / 30
+        for bullet in bullet_pos:
+            bullet[1] -= 500 / 30
 
-    if frames % spawn_rate == 0:
-        randy = random.randint(0,580)
-        grinchy.append([randy,0])
+        if frames % spawn_rate == 0:
+            randy = random.randint(0,580)
+            grinchy.append([randy,0])
 
-    # DRAWING
-    sugar_shooter1 = pygame.draw.rect(screen, (255, 255, 255), pygame.Rect(sugar_shooter_x, sugar_shooter_y, 25, 120))
-    sugar_shooter1 = pygame.draw.rect(screen, (255, 0, 0), pygame.Rect(sugar_shooter_x, sugar_shooter_y, 25, 25))
-    sugar_shooter1 = pygame.draw.rect(screen, (255, 0, 0), pygame.Rect(sugar_shooter_x, sugar_shooter_y + 50, 25, 25))
-    sugar_shooter1 = pygame.draw.rect(screen, (255, 0, 0), pygame.Rect(sugar_shooter_x, sugar_shooter_y + 100, 25, 25))
-    sugar_shooter1 = pygame.draw.rect(screen, (255, 255, 255), pygame.Rect(sugar_shooter_x + 25, sugar_shooter_y + 100, 25, 25))
-    
-    pressed_fire_previous_frame = keys[pygame.K_UP]
+        # DRAWING
+        sugar_shooter1 = pygame.draw.rect(screen, (255, 255, 255), pygame.Rect(sugar_shooter_x, sugar_shooter_y, 25, 120))
+        sugar_shooter1 = pygame.draw.rect(screen, (255, 0, 0), pygame.Rect(sugar_shooter_x, sugar_shooter_y, 25, 25))
+        sugar_shooter1 = pygame.draw.rect(screen, (255, 0, 0), pygame.Rect(sugar_shooter_x, sugar_shooter_y + 50, 25, 25))
+        sugar_shooter1 = pygame.draw.rect(screen, (255, 0, 0), pygame.Rect(sugar_shooter_x, sugar_shooter_y + 100, 25, 25))
+        sugar_shooter1 = pygame.draw.rect(screen, (255, 255, 255), pygame.Rect(sugar_shooter_x + 25, sugar_shooter_y + 100, 25, 25))
+
+        timer_render = font.render(f"Timer: {timer}", 1, (0, 0, 0))
+        screen.blit(timer_render, (0, 0))
+
+        grinches = font.render(f"Grinches passed: {grinches_passed}", 1, (0, 0, 0))
+        screen.blit(grinches, (0, 450))
+
+        grinches_killed = font.render(f"Grinches killed: {grinches_removed}", 1, (0, 0, 0))
+        screen.blit(grinches_killed, (380, 0))
+        
+        pressed_fire_previous_frame = keys[pygame.K_UP]
+
+    if grinches_passed == 3:
+        screen.fill((102, 252, 255))
+        time_lost = timer
+        for snowflake in snowflakes:
+            snowflake[1] += snowflake[3]
+            if snowflake[1] > HEIGHT:
+                snowflake[1] = random.randint(-HEIGHT, 0)
+                snowflake[0] = random.randint(0, WIDTH)
+            pygame.draw.circle(screen, (255,255,255), (int(snowflake[0]), int(snowflake[1])), snowflake[2])
+        lose = True
+        loss_message = font_big.render(f"YOU LOST!", 1, (0, 0, 0))
+        screen.blit(loss_message, (200, 100))
+
+        loss_retry = font_big.render(f"PRESS R TO RESTART!", 1, (0, 0, 0))
+        screen.blit(loss_retry, (50, 150))
+
+        grinch_kill_score = font_big.render(f"You killed: {grinches_removed} grinches!", 1, (0, 0, 0))
+        screen.blit(grinch_kill_score, (50, 200))
+
+        time_score_count = timer
+        time_score = font_big.render(f"Your time: {time_score_count} seconds!", 1, (0, 0, 0))
+        screen.blit(time_score, (50, 250))
+
+        if keys [pygame.K_r]:
+            frames = 0
+            grinchy = []
+            grinches_removed = 0
+            grinches_passed = 0
+            lose = False
+            menu = True
 
     pygame.display.flip()
     clock.tick(30)
-
-    print(int(int(pygame.time.get_ticks())/ 1000))
 
     frames += 1
     #---------------------------
