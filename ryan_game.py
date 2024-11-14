@@ -28,7 +28,60 @@ def draw_snake(snake_list):
     for i, (x, y) in enumerate(snake_list):
         color = red if i % 2 == 0 else green  
         pygame.draw.rect(screen, color, [x, y, snake_block, snake_block])
-#display of the message
+
 def message(msg, color):
     mesg = font_style.render(msg, True, color)
     screen.blit(mesg, [width / 6, height / 3])
+    def gameLoop():
+    game_over = False
+    game_close = False
+
+    x1 = width / 2
+    y1 = height / 2
+
+    x1_change = 0
+    y1_change = 0
+
+    snake_List = []
+    Length_of_snake = 1
+
+    # Spawn present on game start
+    foodx = round(random.randrange(0, width - snake_block) / 10.0) * 10.0
+    foody = round(random.randrange(0, height - snake_block) / 10.0) * 10.0
+
+    score = 0
+
+    clock = pygame.time.Clock()
+
+    while not game_over:
+
+        while game_close:
+            screen.fill(white)
+            message("Merry Christmas! Press (P)Play Again or (Q)Quit", red)
+            pygame.display.update()
+
+            for event in pygame.event.get():
+                if event.type == pygame.KEYDOWN:
+                    if event.key == pygame.K_q:
+                        game_over = True
+                        game_close = False
+                    if event.key == pygame.K_p:
+                        gameLoop()
+
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                game_over = True
+            if event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_a and x1_change == 0: 
+                    x1_change = -snake_block
+                    y1_change = 0
+                elif event.key == pygame.K_d and x1_change == 0:
+                    x1_change = snake_block
+                    y1_change = 0
+                elif event.key == pygame.K_w and y1_change == 0:
+                    y1_change = -snake_block
+                    x1_change = 0
+                elif event.key == pygame.K_s and y1_change == 0:
+                    y1_change = snake_block
+                    x1_change = 0
+
