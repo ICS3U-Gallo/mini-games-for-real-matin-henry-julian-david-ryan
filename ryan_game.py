@@ -84,4 +84,33 @@ def message(msg, color):
                 elif event.key == pygame.K_s and y1_change == 0:
                     y1_change = snake_block
                     x1_change = 0
+        # wall collisions
+        if x1 >= width or x1 < 0 or y1 >= height or y1 < 0:
+            game_close = True
 
+        x1 += x1_change
+        y1 += y1_change
+        screen.fill(white)
+
+        # present
+        draw_present(foodx, foody) 
+
+        snake_Head = [x1, y1]
+        snake_List.append(snake_Head)
+
+        if len(snake_List) > Length_of_snake:
+            del snake_List[0]
+
+        # Self colision
+        for x, y in snake_List[:-1]:
+            if [x, y] == snake_Head:
+                game_close = True
+
+        draw_snake(snake_List)
+
+        if x1 == foodx and y1 == foody:
+
+            foodx = round(random.randrange(0, width - snake_block) / 10.0) * 10.0
+            foody = round(random.randrange(0, height - snake_block) / 10.0) * 10.0
+            Length_of_snake += 1 
+            score += 10  
