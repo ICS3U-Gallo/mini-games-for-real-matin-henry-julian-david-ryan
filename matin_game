@@ -1,10 +1,5 @@
 #star shooter, christmas style, shooting the grinch before he comes down the chimney
 
-# TO DO:
-# - Menu page
-# - Reset timer when lost
-# - Sound
-
 import pygame
 import random
 pygame.init()
