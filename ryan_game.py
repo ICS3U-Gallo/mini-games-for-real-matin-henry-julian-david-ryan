@@ -154,3 +154,15 @@ def message(msg, color):
             foody = round(random.randrange(0, height - snake_block) / 10.0) * 10.0
             Length_of_snake += 1 
             score += 10  
+            
+        score_text = font_style.render(f"Score: {score}", True, black)
+        screen.blit(score_text, [10, 10])
+        pygame.display.update()
+
+        clock.tick(snake_speed)
+
+    pygame.quit()
+    quit()
+
+game_menu()  # Start the menu when the game is run
+
