@@ -3,6 +3,8 @@ import random
 
 pygame.init()
 
+
+#---- ALL TYPES OF SETUP ----
 # Screen and clock setup
 WIDTH = 640
 HEIGHT = 480
@@ -27,9 +29,10 @@ DARK_RED = (139, 0, 0)
 DARK_GREEN_2 = (0, 100, 0)
 LIGHT_CHRISTMAS_GREEN = (144, 238, 144)
 GRAY = (169, 169, 169) 
+WHITISH_BLUE = (173, 216, 230)
 
 # Font setup
-font = pygame.font.Font(None, 25)  # Reduced font size for better fit in instructions
+font = pygame.font.Font(None, 25)  # Normal font size
 large_font = pygame.font.Font(None, 35)  # Adjusted for title
 
 # Game state variables
@@ -40,15 +43,8 @@ in_game = False
 hearts = 3
 presents_collected = 0
 
-# Define positions for each Grinch shooter (x, y) pairs
-shooters = [
-    [150, 100],  # Shooter 1 position
-    [450, 150],  # Shooter 2 position
-    [600, 250]   # Shooter 3 position
-]
-
 # Shooter speed
-shooter_speed = 2  # Speed at which shooters move
+shooter_speed = 2
 
 # Snowflakes setup
 snowflakes = [[random.randint(0, WIDTH), random.randint(-HEIGHT, 0), random.randint(2, 5), random.uniform(0.03, 0.5)] for _ in range(100)]
@@ -111,7 +107,7 @@ red_present_spawn_chance = 0.001
 blue_presents = []
 blue_present_spawn_chance = 0.0001
 
-#grinch Presents setup
+# Grinch Presents setup
 grinch_presents = []
 grinch_present_spawn_chance = 0.002
 
@@ -135,7 +131,7 @@ def reset_game():
     blue_presents.clear()
     red_presents.clear()
 
-# Main game loop
+#---- MAIN GAME LOOP ----
 while running:
     # --- EVENT HANDLING ---
     for event in pygame.event.get():
@@ -167,7 +163,7 @@ while running:
                     in_menu = True
                     reset_game()
 
-        # --- DRAWING (Menu & Instructions) ---
+        # ---- DRAWING (Menu & Instructions) ----
         screen.fill(LIGHT_BLUE)  # Light blue background for snow visibility
 
         # Draw the snowy grass (top section)
@@ -221,15 +217,17 @@ while running:
         if show_instructions:
             # Instructions screen
             title_text = large_font.render("Instructions", True, DARK_RED)
-            instructions_text = font.render("Collect presents to give to Santa!", True, BLACK)
+            instructions_text = font.render("Collect presents and avoid the grinches'!", True, BLACK)
             instructions_text2 = font.render("Use arrow keys to move.", True, BLACK)
             instructions_text3 = font.render("Evade the snowballs being thrown at you!", True, BLACK)
+            instructions_text4 = font.render("Collect Red and Blue ones for special prizes!", True, BLACK)
             back_text = font.render("Press Enter to start the Game.", True, GOLD)
 
             # Display the instructions
             screen.blit(title_text, (WIDTH // 2 - title_text.get_width() // 2, box_y + 20))
             screen.blit(instructions_text, (WIDTH // 2 - instructions_text.get_width() // 2, box_y + 80))
             screen.blit(instructions_text2, (WIDTH // 2 - instructions_text2.get_width() // 2, box_y + 160))
+            screen.blit(instructions_text4, (WIDTH // 2 - instructions_text4.get_width() // 2, box_y + 100))
             screen.blit(instructions_text3, (WIDTH // 2 - instructions_text3.get_width() // 2, box_y + 120))
             screen.blit(back_text, (WIDTH // 2 - back_text.get_width() // 2, box_y + box_height - 60))
         else:
@@ -266,7 +264,7 @@ while running:
             pygame.draw.circle(screen, GOLD, (tree_x, tree_y - 40), 8)  # Star on top
 
         pygame.display.flip()
-
+    #---- KEY CONTROLS ----
     elif in_game:
         keys = pygame.key.get_pressed()
 
@@ -291,7 +289,7 @@ while running:
         if presents_collected == 7 and len(shooters) == 2:
             shooters.append([3 * WIDTH // 4, HEIGHT - 30, 2])
 
-            # Spawn and collect red presents for extra heart
+        # Spawn and collect red presents for extra heart
         if random.random() < red_present_spawn_chance:
             red_present_x = random.randint(left_barrier, right_barrier)
             red_present_y = random.randint(top_barrier, bottom_barrier)
@@ -309,34 +307,34 @@ while running:
             present_y = random.randint(top_barrier, bottom_barrier)
             presents.append([present_x, present_y])
 
-        # Collision detection for red presents
+        # Red present pick up
         for red_present in red_presents[:]:
             if runner_x - runner_radius < red_present[0] < runner_x + runner_radius and runner_y - runner_radius < red_present[1] < runner_y + runner_radius:
                 hearts += 1  # Increase hearts by 1
                 red_presents.remove(red_present)  # Remove collected red present
 
-        # Collision detection for blue presents
+        # Blue present pick up
         for blue_present in blue_presents[:]:
             if runner_x - runner_radius < blue_present[0] < runner_x + runner_radius and runner_y - runner_radius < blue_present[1] < runner_y + runner_radius:
                 if shooters:  # Remove a shooter if any exist
                     shooters.pop()
                 blue_presents.remove(blue_present)  # Remove collected blue present
 
-                # Spawn Grinch presents with a 0.5% chance
+                # Spawn Grinch presents
         if random.random() < grinch_present_spawn_chance:
             grinch_x = random.randint(left_barrier, right_barrier)
             grinch_y = random.randint(top_barrier, bottom_barrier)
             grinch_presents.append([grinch_x, grinch_y])
 
-        # Detect collision and apply effects for Grinch presents
+        # Grinch present pick up
         for grinch_present in grinch_presents[:]:
             if (runner_x - runner_radius < grinch_present[0] < runner_x + runner_radius and 
                 runner_y - runner_radius < grinch_present[1] < runner_y + runner_radius):
-                presents_collected = max(0, presents_collected - 2)  # Reduce by 2, no negative values
+                presents_collected = max(0, presents_collected - 2) # No negatives!
                 grinch_presents.remove(grinch_present)
 
 
-        # Add Grinches at specific intervals
+        # Add Grinches intervals
         if presents_collected in grinch_spawn_intervals:
             grinches.append([random.randint(left_barrier, right_barrier), -30])
 
@@ -380,7 +378,7 @@ while running:
                     in_menu = True
                     reset_game()
 
-        # --- DRAWING ---
+        # --- DRAWING (MAIN GAME!!)---
         screen.fill(LIGHT_BLUE)
                 # Draw the left sidewalk starting from left_barrier to the road
         pygame.draw.rect(screen, LIGHT_BLUE, (left_barrier, 0, road_width, screen_height))
@@ -421,12 +419,11 @@ while running:
             pygame.draw.circle(screen, WHITE, (shooter[0], shooter[1] - 25), 3)  # White tip of the hat
 
         # Draw Santa (player) character at the defined position
-        pygame.draw.circle(screen, RED, (runner_x, runner_y), 10)  # Head
-        pygame.draw.rect(screen, RED, (runner_x - 8, runner_y + 10, 16, 20))  # Body
-        pygame.draw.arc(screen, WHITE, (runner_x - 6, runner_y + 15, 12, 8), 3.14, 0, 3)  # Beard
-        pygame.draw.polygon(screen, RED, [(runner_x - 10, runner_y - 8), (runner_x + 10, runner_y - 8), (runner_x, runner_y - 20)])  # Hat
-        pygame.draw.rect(screen, WHITE, (runner_x - 6, runner_y - 12, 12, 4))  # Hat band
-
+        pygame.draw.circle(screen, RED, (runner_x, runner_y), 5)  # Head
+        pygame.draw.rect(screen, RED, (runner_x - 4, runner_y + 5, 8, 10))  # Body
+        pygame.draw.arc(screen, WHITE, (runner_x - 3, runner_y + 7, 6, 4), 3.14, 0, 2)  # Beard
+        pygame.draw.polygon(screen, RED, [(runner_x - 5, runner_y - 4), (runner_x + 5, runner_y - 4), (runner_x, runner_y - 10)])
+        pygame.draw.rect(screen, WHITE, (runner_x - 3, runner_y - 6, 6, 2))  # Hat band
 
         # Snowfall effect
         for snowflake in snowflakes:
@@ -440,55 +437,52 @@ while running:
             # Draw houses with windows, door, roof, and snow
             pygame.draw.rect(screen, BROWN, (house1_x, pos, house_width, house_height))
             pygame.draw.rect(screen, BROWN, (house2_x, pos, house_width, house_height))
-            pygame.draw.rect(screen, RED, (house1_x + 5, pos + 10, 10, 10))  # Door on house 1
-            pygame.draw.rect(screen, RED, (house2_x + 5, pos + 10, 10, 10))  # Door on house 2
-            pygame.draw.rect(screen, WHITE, (house1_x + 5, pos + 5, 10, 10))  # Window on house 1
-            pygame.draw.rect(screen, WHITE, (house2_x + 5, pos + 5, 10, 10))  # Window on house 2
+            pygame.draw.rect(screen, RED, (house1_x + 5, pos + 10, 10, 10))
+            pygame.draw.rect(screen, RED, (house2_x + 5, pos + 10, 10, 10))
+            pygame.draw.rect(screen, WHITE, (house1_x + 5, pos + 5, 10, 10)) 
+            pygame.draw.rect(screen, WHITE, (house2_x + 5, pos + 5, 10, 10))  
             pygame.draw.polygon(screen, BROWN, [(house1_x - 5, pos), (house1_x + house_width + 5, pos), (house1_x + house_width // 2, pos - 10)])  # Roof on house 1
             pygame.draw.polygon(screen, BROWN, [(house2_x - 5, pos), (house2_x + house_width + 5, pos), (house2_x + house_width // 2, pos - 10)])  # Roof on house 2
 
             # Draw trees above the houses
             pygame.draw.polygon(screen, DARK_GREEN, [(house1_x - 15, pos - 80), (house1_x + house_width + 15, pos - 80), (house1_x + house_width // 2, pos - 120)])  # Tree top
-            pygame.draw.rect(screen, BROWN, (house1_x + house_width // 2 - 5, pos - 80, 10, 20))  # Tree trunk
+            pygame.draw.rect(screen, BROWN, (house1_x + house_width // 2 - 5, pos - 80, 10, 20)) 
             pygame.draw.polygon(screen, DARK_GREEN, [(house2_x - 15, pos - 80), (house2_x + house_width + 15, pos - 80), (house2_x + house_width // 2, pos - 120)])  # Tree top
-            pygame.draw.rect(screen, BROWN, (house2_x + house_width // 2 - 5, pos - 80, 10, 20))  # Tree trunk
+            pygame.draw.rect(screen, BROWN, (house2_x + house_width // 2 - 5, pos - 80, 10, 20)) 
 
         # Standard Present
         for present in presents:
             x, y = present[0], present[1]
-            pygame.draw.rect(screen, YELLOW, (x - 10, y - 10, 20, 20))  # Box
-            pygame.draw.line(screen, WHITE, (x - 10, y), (x + 10, y), 2)  # Horizontal ribbon
-            pygame.draw.line(screen, WHITE, (x, y - 10), (x, y + 10), 2)  # Vertical ribbon
+            pygame.draw.rect(screen, YELLOW, (x - 10, y - 10, 20, 20)) 
+            pygame.draw.line(screen, WHITE, (x - 10, y), (x + 10, y), 2) 
+            pygame.draw.line(screen, WHITE, (x, y - 10), (x, y + 10), 2)  
 
         # Draw red presents (extra heart)
         for red_present in red_presents:
             x, y = red_present[0], red_present[1]
-            pygame.draw.rect(screen, RED, (x - 10, y - 10, 20, 20))  # Box
-            pygame.draw.line(screen, WHITE, (x - 10, y), (x + 10, y), 2)  # Horizontal ribbon
-            pygame.draw.line(screen, WHITE, (x, y - 10), (x, y + 10), 2)  # Vertical ribbon
+            pygame.draw.rect(screen, RED, (x - 10, y - 10, 20, 20)) 
+            pygame.draw.line(screen, WHITE, (x - 10, y), (x + 10, y), 2) 
+            pygame.draw.line(screen, WHITE, (x, y - 10), (x, y + 10), 2) 
             # Heart symbol
             pygame.draw.polygon(screen, RED, [(x, y - 3), (x - 4, y + 4), (x + 4, y + 4)])
             
         # Draw blue presents (eliminate a shooter)
         for blue_present in blue_presents:
             x, y = blue_present[0], blue_present[1]
-            pygame.draw.rect(screen, BLUE, (x - 10, y - 10, 20, 20))  # Box
-            pygame.draw.line(screen, WHITE, (x - 10, y), (x + 10, y), 2)  # Horizontal ribbon
-            pygame.draw.line(screen, WHITE, (x, y - 10), (x, y + 10), 2)  # Vertical ribbon
+            pygame.draw.rect(screen, BLUE, (x - 10, y - 10, 20, 20)) 
+            pygame.draw.line(screen, WHITE, (x - 10, y), (x + 10, y), 2)  
+            pygame.draw.line(screen, WHITE, (x, y - 10), (x, y + 10), 2) 
             # Star or dot symbol
             pygame.draw.circle(screen, YELLOW, (x, y), 3)
 
         #Grinch presents 
         for grinch_present in grinch_presents:
             x, y = grinch_present[0], grinch_present[1]
-            pygame.draw.rect(screen, GREEN, (x - 10, y - 10, 20, 20))  # Box
-            pygame.draw.line(screen, WHITE, (x - 10, y), (x + 10, y), 2)  # Horizontal ribbon
-            pygame.draw.line(screen, WHITE, (x, y - 10), (x, y + 10), 2)  # Vertical ribbon
-            # Grinch face details
-            pygame.draw.rect(screen, BLACK, (x - 2, y - 5, 4, 1))  # Eyes
-            pygame.draw.line(screen, BLACK, (x - 5, y + 5), (x + 5, y + 5), 1)  # Mouth
+            pygame.draw.rect(screen, GREEN, (x - 10, y - 10, 20, 20))  
+            pygame.draw.line(screen, WHITE, (x - 10, y), (x + 10, y), 2)  
+            pygame.draw.line(screen, WHITE, (x, y - 10), (x, y + 10), 2)
 
-        # Draw hearts (existing code)
+        # Draw hearts 
         for i in range(hearts):
             pygame.draw.circle(screen, RED, (20 + i * 30, 20), 10)
 
@@ -496,8 +490,8 @@ while running:
         for snowball in snowballs:
             snowball_radius = 5
             if presents_collected >= 14:
-                snowball_radius = 10  # Make snowballs larger at 14 presents
-            pygame.draw.circle(screen, SILVER, (snowball[0], snowball[1]), snowball_radius)
+                snowball_radius = 10  
+            pygame.draw.circle(screen, WHITISH_BLUE, (snowball[0], snowball[1]), snowball_radius)
 
         # Draw hearts
         for i in range(hearts):
