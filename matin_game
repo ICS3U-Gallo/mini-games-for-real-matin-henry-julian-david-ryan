@@ -59,6 +59,7 @@ running = True
 while running:
     # EVENT HANDLING
     keys = pygame.key.get_pressed()
+    total_timer = int(pygame.time.get_ticks()/ 1000)
 
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
@@ -91,7 +92,7 @@ while running:
         play_bringon = font.render(f"(press space)", 3, (0, 0, 0))
         screen.blit(play_bringon, (250, 300))
         if keys[pygame.K_SPACE] == True:
-            last_time = timer
+            last_time = total_timer
             menu = False
 
     if not lose:
